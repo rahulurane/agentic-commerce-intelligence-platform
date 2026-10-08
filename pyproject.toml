@@ -1,0 +1,46 @@
+[project]
+name = "acip"
+version = "0.1.0"
+description = "Agentic Commerce Intelligence Platform (ACIP) — Phase 1 foundation layer"
+requires-python = ">=3.11"
+# The root project is a thin aggregator for the uv workspace; runtime code lives in
+# the workspace members (libs/*) and in the standalone ml/ project.
+dependencies = []
+
+[tool.uv.workspace]
+members = ["libs/*"]
+
+[tool.uv.sources]
+acip-common = { workspace = true }
+
+[dependency-groups]
+# Workspace-wide dev tooling plus the deps scripts/seed.py needs, so `make seed`
+# and the lint/test gate all run under the single root virtualenv (plan item 9).
+dev = [
+    "ruff==0.8.4",
+    "black==24.10.0",
+    "mypy==1.13.0",
+    "pytest==8.3.4",
+    "acip-common",
+    "neo4j==5.27.0",
+    "psycopg[binary]==3.2.3",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["libs/acip-common/src", "ml", "scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "W"]
+
+[tool.black]
+target-version = ["py311"]
+line-length = 100
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_configs = true
+namespace_packages = true
+explicit_package_bases = true

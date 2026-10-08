@@ -1,0 +1,17 @@
+[project]
+name = "acip-common"
+version = "0.1.0"
+description = "ACIP shared library: config, schemas, feature transforms, logging, Kafka wrapper"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic==2.10.4",
+    "pydantic-settings==2.7.1",
+    "confluent-kafka==2.6.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/acip_common"]

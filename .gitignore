@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+build/
+dist/
+
+# Virtual envs / uv
+.venv/
+.uv/
+
+# Tooling caches
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+
+# Secrets — never commit
+.env
+
+# Generated ML artifacts (keep placeholders only)
+ml/data/*
+ml/models/*
+!ml/data/.gitkeep
+!ml/models/.gitkeep
+*.parquet
+*.csv
+*.pkl
+*.joblib
+*.bst
+*.txt.model
+
+# OS / editor
+.DS_Store

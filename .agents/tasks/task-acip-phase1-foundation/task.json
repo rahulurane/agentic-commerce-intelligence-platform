@@ -1,0 +1,7 @@
+{
+  "task_id": "task-acip-phase1-foundation",
+  "task_description": "Build ACIP Phase 1 foundation layer: repo scaffolding + uv workspace, the acip-common shared library (event envelope, shared transaction representation, verdict schema, pydantic-settings config, confluent-kafka client wrapper, JSON logging/trace helpers, shared feature transforms, unit tests), the ML layer (synthetic dataset generator + XGBoost/LightGBM training job), the Neo4j+Postgres demo seed, and the INFRASTRUCTURE-ONLY Docker Compose stack with its Makefile. The 14 application services are NOT implemented this phase (services/* get empty .gitkeep dirs). Everything is grounded in docs/00-07; locked decisions: Python 3.11+, uv workspace, Redpanda for Kafka API, sync checkout default, thresholds approve_max=0.35/challenge_max=0.70/fraud_block=0.85, equal 0.5/0.5 weights, FastAPI+Pydantic v2 at edges, Neo4j5/Postgres16/Redis7, Ruff+Black+mypy+pytest, pinned deps, secrets via env only.",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
+  "blocked_reason": null
+}
