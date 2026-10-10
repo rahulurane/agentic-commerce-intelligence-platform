@@ -1,0 +1,11 @@
+# Minimal Prometheus scrape config for the ACIP local stack (docs/07 §5).
+# Full per-service scrape jobs + dashboards are a later-phase concern tied to real
+# service metrics; for now Prometheus scrapes only itself so the stack boots cleanly.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

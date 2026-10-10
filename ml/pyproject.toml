@@ -1,0 +1,31 @@
+# The ml/ project is its own uv-managed project (not a workspace lib) so the heavy ML
+# stack (xgboost/lightgbm/scikit-learn/pandas) stays isolated from the light
+# acip-common runtime. It depends on acip-common by path so the dataset generator and
+# live scoring share the same feature transforms (no train/serve skew; plan item 9).
+# scripts/ deps (neo4j, psycopg) are instead folded into the root dev group so
+# `make seed` runs under the root virtualenv.
+[project]
+name = "acip-ml"
+version = "0.1.0"
+description = "ACIP offline ML: synthetic dataset generation + risk/fraud model training"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy==2.1.3",
+    "pandas==2.2.3",
+    "pyarrow==18.1.0",
+    "faker==33.1.0",
+    "xgboost==2.1.3",
+    "lightgbm==4.5.0",
+    "scikit-learn==1.6.0",
+    "acip-common",
+]
+
+[tool.uv.sources]
+acip-common = { path = "../libs/acip-common", editable = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["training"]

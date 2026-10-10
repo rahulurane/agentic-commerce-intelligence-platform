@@ -7,8 +7,10 @@ docs/07 §2 with the locked defaults. All services import this instead of readin
 
 from __future__ import annotations
 
+from typing import Annotated
+
 from pydantic import Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -54,7 +56,9 @@ class Settings(BaseSettings):
 
     # --- representation + methods ---
     representation_version: int = Field(default=1, alias="REPRESENTATION_VERSION")
-    enabled_method_types: list[str] = Field(
+    # NoDecode: skip pydantic-settings' JSON decoding so the validator below parses the
+    # plain comma-separated env string instead of expecting a JSON array.
+    enabled_method_types: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: ["card", "upi", "netbanking", "wallet", "cod"],
         alias="ENABLED_METHOD_TYPES",
     )

@@ -1,0 +1,11 @@
+# Grafana provisioning: wire Prometheus as the default datasource at startup
+# (docs/07 §5). Dashboards are provisioned in a later phase with real service metrics.
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true

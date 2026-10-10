@@ -68,7 +68,7 @@ keeping them pinned.
 
 ---
 
-- [ ] 1. Create repo scaffolding directories and `.gitkeep` placeholders per `docs/01` §8.
+- [x] 1. Create repo scaffolding directories and `.gitkeep` placeholders per `docs/01` §8.
       Create `libs/`, `services/` with one empty subdir per the 14 services from
       `docs/01` §2 each containing a `.gitkeep`, `ml/training/`, `ml/data/`,
       `ml/models/`, `deploy/`, `deploy/prometheus/`, `deploy/grafana/provisioning/`,
@@ -77,7 +77,7 @@ keeping them pinned.
       `ml/data/.gitkeep`, `ml/models/.gitkeep`
       Verify: `ls services | wc -l` returns 14 and `test -f ml/data/.gitkeep` succeeds.
 
-- [ ] 2. Create the uv workspace root: `pyproject.toml` (workspace members `libs/*`;
+- [x] 2. Create the uv workspace root: `pyproject.toml` (workspace members `libs/*`;
       dev group with ruff/black/mypy/pytest pinned; `[tool.ruff]`, `[tool.black]`,
       `[tool.mypy]` config targeting py311, line length 100), `.python-version` (`3.11`),
       `.gitignore` (ignore `.env`, `ml/data/*`, `ml/models/*` with `!*.gitkeep`,
@@ -88,7 +88,7 @@ keeping them pinned.
       Verify: `uv sync` resolves and creates `.venv` with no error; `uv run ruff --version`
       prints the pinned version.
 
-- [ ] 3. Create the `acip-common` package skeleton and its `pyproject.toml`.
+- [x] 3. Create the `acip-common` package skeleton and its `pyproject.toml`.
       Package at `libs/acip-common/` with `pyproject.toml` (name `acip-common`,
       requires-python `>=3.11`, deps pydantic/pydantic-settings/confluent-kafka pinned,
       hatchling build backend), `src/acip_common/__init__.py` (exports version), and a
@@ -98,7 +98,7 @@ keeping them pinned.
       Verify: `uv sync` resolves the workspace; `uv run python -c "import acip_common"`
       succeeds.
 
-- [ ] 4. Implement `acip_common.config` — the typed `Settings` (pydantic-settings) with
+- [x] 4. Implement `acip_common.config` — the typed `Settings` (pydantic-settings) with
       every env var from `docs/07` §2 and locked defaults (KAFKA_BOOTSTRAP, NEO4J_URI,
       NEO4J_AUTH, POSTGRES_DSN, REDIS_URL, LLM_PROVIDER=gemini, LLM_MODEL=gemini-1.5-pro,
       LLM_FALLBACK_PROVIDER=mock, GOOGLE_APPLICATION_CREDENTIALS, DECISION_DEADLINE_MS=800,
@@ -108,7 +108,7 @@ keeping them pinned.
       Files: `libs/acip-common/src/acip_common/config.py`
       Verify: covered by item 8's pytest (defaults + env override round-trip).
 
-- [ ] 5. Implement `acip_common.schemas` — Pydantic v2 domain models and event schemas.
+- [x] 5. Implement `acip_common.schemas` — Pydantic v2 domain models and event schemas.
       One coherent module (or `schemas/` package) containing: the common EVENT ENVELOPE
       (`docs/03` §1: event_id, event_type, event_version, transaction_id, trace_id,
       occurred_at, producer, payload); the SHARED TRANSACTION REPRESENTATION exactly per
@@ -124,7 +124,7 @@ keeping them pinned.
       `envelope.py`, `representation.py`, `verdict.py`, `events.py`)
       Verify: covered by item 8's pytest (JSON round-trip for every event + representation).
 
-- [ ] 6. Implement `acip_common.features` — the shared feature-transform functions.
+- [x] 6. Implement `acip_common.features` — the shared feature-transform functions.
       Pure functions that compute the 7 core features from `docs/05` §6.2 /`docs/03` §8
       (`amount_zscore`, `velocity_1h`, `method_age_days`, `geo_mismatch`,
       `shared_device_ring_size`, `customer_txn_count_30d`, `customer_chargeback_count`)
@@ -135,7 +135,7 @@ keeping them pinned.
       Files: `libs/acip-common/src/acip_common/features.py`
       Verify: covered by item 8's pytest (deterministic transform outputs for known inputs).
 
-- [ ] 7. Implement `acip_common.logging` + `acip_common.kafka` — observability and the
+- [x] 7. Implement `acip_common.logging` + `acip_common.kafka` — observability and the
       Kafka client wrapper. `logging.py`: `configure_logging()` installing a JSON
       formatter, a `trace_id` contextvar, and `bind_trace_id()`/`get_trace_id()` helpers
       so every log line carries the trace (`docs/01` §6, `docs/07` §5). `kafka.py`:
@@ -149,7 +149,7 @@ keeping them pinned.
       Verify: `uv run python -c "import acip_common.kafka, acip_common.logging"` imports
       clean; JSON log line asserted in item 8's pytest.
 
-- [ ] 8. Add `acip-common` unit tests — schema round-trips, config, and feature transforms.
+- [x] 8. Add `acip-common` unit tests — schema round-trips, config, and feature transforms.
       Tests under `libs/acip-common/tests/`: `test_schemas.py` (serialize→deserialize
       every event + the shared representation, assert field integrity and enum
       validation), `test_config.py` (defaults match `docs/07`, env override works),
@@ -161,7 +161,7 @@ keeping them pinned.
       Verify: `uv run pytest libs/acip-common` — all tests pass. Then
       `uv run ruff check libs/acip-common ml && uv run black --check libs/acip-common ml && uv run mypy libs/acip-common` — clean.
 
-- [ ] 9. Create the `ml/` uv project manifest and `scripts/` resolution.
+- [x] 9. Create the `ml/` uv project manifest and `scripts/` resolution.
       `ml/pyproject.toml` declaring the ML runtime deps (numpy, pandas, pyarrow, faker,
       xgboost, lightgbm, scikit-learn pinned) + path dep on `acip-common`, and
       `scripts/pyproject.toml` (or fold scripts deps into root dev group) declaring
@@ -172,7 +172,7 @@ keeping them pinned.
       Files: `ml/pyproject.toml`, root `pyproject.toml` (add scripts deps to dev group)
       Verify: `cd ml && uv sync` resolves ML deps including the `acip-common` path dep.
 
-- [ ] 10. Implement `ml/training/generate_dataset.py` — Layer 1 synthetic generator per
+- [x] 10. Implement `ml/training/generate_dataset.py` — Layer 1 synthetic generator per
       `docs/05` §6.2. CLI (argparse) with defaults n_customers=10000, n_merchants=500,
       n_transactions=100000, fraud_rate=0.025, label_noise=0.03, seed=42. Generation
       order entities→transactions→labels: build customer/merchant/device/IP/method
@@ -188,7 +188,7 @@ keeping them pinned.
       writes `ml/data/*.parquet` + CSV sample and prints a class-balance report with
       roughly `fraud_rate` positives.
 
-- [ ] 11. Implement `ml/training/train.py` — trains risk (XGBoost) + fraud (LightGBM) per
+- [x] 11. Implement `ml/training/train.py` — trains risk (XGBoost) + fraud (LightGBM) per
       `docs/05` §5. Load the Parquet from item 10, build features via the shared
       transforms, do a validation split (scikit-learn), train both models, compute AUC +
       PR-AUC on validation, serialize versioned artifacts (`<model>-<algo>-<date>`) under
@@ -200,7 +200,7 @@ keeping them pinned.
       writes two model artifacts + `ml/models/model_card.json` and prints AUC/PR-AUC for
       both models; `model_card.json` contains the synthetic-data caveat.
 
-- [ ] 12. Implement `scripts/seed.py` — Layer 2 Neo4j + Postgres demo seed per `docs/05`
+- [x] 12. Implement `scripts/seed.py` — Layer 2 Neo4j + Postgres demo seed per `docs/05`
       §6.3. Idempotent (re-run resets to the same known state): build the five named
       scenarios (`clean_shopper`→APPROVE, `ring_member`→fraud DECLINE,
       `high_value_midrisk`→CHALLENGE, `sanctioned_geo`→policy DECLINE,
@@ -216,7 +216,7 @@ keeping them pinned.
       idempotent across two runs; with stores DOWN it exits non-zero with a clear
       connection error naming Neo4j or Postgres (test the error path without a stack).
 
-- [ ] 13. Create `deploy/docker-compose.yml` — INFRASTRUCTURE ONLY per `docs/07` §1.
+- [x] 13. Create `deploy/docker-compose.yml` — INFRASTRUCTURE ONLY per `docs/07` §1.
       Services: `redpanda` (Kafka API, single broker, healthcheck), `kafka-init` (one-shot
       that creates topics `txn.lifecycle`, `txn.evaluate`, `agent.verdicts`,
       `decision.log` and their `.dlq` siblings from `docs/03` §2 using `rpk topic create`,
@@ -233,7 +233,7 @@ keeping them pinned.
       Verify: `docker compose -f deploy/docker-compose.yml config` validates with no
       error and lists exactly the infra services (no app services).
 
-- [ ] 14. Create the `Makefile` per `docs/07` §3. Working targets this phase:
+- [x] 14. Create the `Makefile` per `docs/07` §3. Working targets this phase:
       `build`/`up`/`down` (compose up/down for infra), `topics` (idempotent topic
       creation via the init path), `train` (runs generate_dataset then train under
       `ml/`), `seed` (runs `scripts/seed.py`), `lint` (ruff check), `format`
@@ -245,7 +245,7 @@ keeping them pinned.
       `make -n train` print the expected commands; `make demo` prints the
       later-phase stub.
 
-- [ ] 15. Final integration verification across the foundation.
+- [x] 15. Final integration verification across the foundation.
       Run the full gate end to end to confirm the layers compose: `uv sync`, then
       `uv run ruff check libs/acip-common ml scripts && uv run black --check libs/acip-common ml scripts && uv run mypy libs/acip-common`,
       then `uv run pytest libs/acip-common`, then the small-override dataset+train run

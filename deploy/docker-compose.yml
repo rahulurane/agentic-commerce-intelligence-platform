@@ -1,0 +1,155 @@
+# ACIP local infrastructure stack — INFRASTRUCTURE ONLY (docs/07 §1).
+# The 14 application services are built in a later phase; this file brings up the
+# backing infra: Redpanda (Kafka API), topic init, Neo4j, Postgres, Redis, and the
+# observability trio (Prometheus, Grafana, Jaeger). All on a private acip-net network.
+name: acip
+
+networks:
+  acip-net:
+    driver: bridge
+
+volumes:
+  redpanda-data:
+  neo4j-data:
+  postgres-data:
+  redis-data:
+  grafana-data:
+
+services:
+  redpanda:
+    image: redpandadata/redpanda:v24.2.7
+    container_name: acip-redpanda
+    command:
+      - redpanda
+      - start
+      - --smp=1
+      - --overprovisioned
+      - --node-id=0
+      - --kafka-addr=PLAINTEXT://0.0.0.0:9092,OUTSIDE://0.0.0.0:19092
+      - --advertise-kafka-addr=PLAINTEXT://redpanda:9092,OUTSIDE://localhost:19092
+    ports:
+      - "19092:19092" # external Kafka API for local tooling
+    volumes:
+      - redpanda-data:/var/lib/redpanda/data
+    networks:
+      - acip-net
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -q 'Healthy:.*true'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  kafka-init:
+    image: redpandadata/redpanda:v24.2.7
+    container_name: acip-kafka-init
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        for t in txn.lifecycle txn.evaluate agent.verdicts decision.log \
+                 txn.lifecycle.dlq txn.evaluate.dlq agent.verdicts.dlq decision.log.dlq; do
+          rpk topic create "$$t" --brokers redpanda:9092 || true
+        done
+        echo "topics ready"
+    networks:
+      - acip-net
+    restart: "no"
+
+  neo4j:
+    image: neo4j:5
+    container_name: acip-neo4j
+    environment:
+      NEO4J_AUTH: ${NEO4J_AUTH:-neo4j/password}
+    ports:
+      - "7474:7474" # browser UI
+      - "7687:7687" # bolt
+    volumes:
+      - neo4j-data:/data
+    networks:
+      - acip-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:7474 >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  postgres:
+    image: postgres:16
+    container_name: acip-postgres
+    environment:
+      POSTGRES_USER: acip
+      POSTGRES_PASSWORD: acip
+      POSTGRES_DB: acip
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - acip-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U acip -d acip"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:7
+    container_name: acip-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - acip-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: acip-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - acip-net
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: acip-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+    ports:
+      - "3000:3000" # dashboards UI
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - acip-net
+    depends_on:
+      - prometheus
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.62.0
+    container_name: acip-jaeger
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686" # trace UI
+      - "4317:4317" # OTLP gRPC
+    networks:
+      - acip-net
