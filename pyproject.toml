@@ -9,12 +9,6 @@ dependencies = []
 
 [tool.uv.workspace]
 members = ["libs/*", "services/*"]
-# Service dirs are still empty scaffolding (.gitkeep only); uv requires every
-# matched member to carry a pyproject.toml. Exclude them until each Phase 2 FEAT
-# adds that service's package, at which point its dir drops out of this list.
-exclude = [
-    "services/graph-projector",
-]
 
 [tool.uv.sources]
 acip-common = { workspace = true }
@@ -24,6 +18,7 @@ checkout-personalization-agent = { workspace = true }
 commerce-orchestrator = { workspace = true }
 decision-engine = { workspace = true }
 fraud-agent = { workspace = true }
+graph-projector = { workspace = true }
 llm-gateway = { workspace = true }
 merchant-agent = { workspace = true }
 ml-scoring-service = { workspace = true }
@@ -63,6 +58,8 @@ dev = [
     "policy-agent",
     "merchant-agent",
     "checkout-personalization-agent",
+    # Phase 3 FEAT-003 graph-projector member, wired like the agents/services above.
+    "graph-projector",
 ]
 
 [tool.ruff]
