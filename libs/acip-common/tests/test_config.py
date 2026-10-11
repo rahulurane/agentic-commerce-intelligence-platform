@@ -28,7 +28,7 @@ def test_defaults_match_docs(monkeypatch: pytest.MonkeyPatch) -> None:
 
     settings = Settings()
 
-    assert settings.kafka_bootstrap == "kafka:9092"
+    assert settings.kafka_bootstrap == "redpanda:9092"
     assert settings.neo4j_uri == "bolt://neo4j:7687"
     assert settings.decision_deadline_ms == 800
     assert settings.fraud_block_threshold == 0.85

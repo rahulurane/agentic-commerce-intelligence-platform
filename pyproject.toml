@@ -8,7 +8,26 @@ requires-python = ">=3.11"
 dependencies = []
 
 [tool.uv.workspace]
-members = ["libs/*"]
+members = ["libs/*", "services/*"]
+# Service dirs are still empty scaffolding (.gitkeep only); uv requires every
+# matched member to carry a pyproject.toml. Exclude them until each Phase 2 FEAT
+# adds that service's package, at which point its dir drops out of this list.
+exclude = [
+    "services/checkout-api",
+    "services/checkout-personalization-agent",
+    "services/commerce-orchestrator",
+    "services/decision-engine",
+    "services/fraud-agent",
+    "services/graph-projector",
+    "services/llm-gateway",
+    "services/merchant-agent",
+    "services/ml-scoring-service",
+    "services/payment-processor-sim",
+    "services/policy-agent",
+    "services/representation-service",
+    "services/risk-agent",
+    "services/routing-agent",
+]
 
 [tool.uv.sources]
 acip-common = { workspace = true }

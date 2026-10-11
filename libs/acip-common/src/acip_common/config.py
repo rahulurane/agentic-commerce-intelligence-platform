@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     )
 
     # --- messaging ---
-    kafka_bootstrap: str = Field(default="kafka:9092", alias="KAFKA_BOOTSTRAP")
+    kafka_bootstrap: str = Field(default="redpanda:9092", alias="KAFKA_BOOTSTRAP")
 
     # --- stores ---
     neo4j_uri: str = Field(default="bolt://neo4j:7687", alias="NEO4J_URI")
@@ -66,6 +66,27 @@ class Settings(BaseSettings):
     # --- processor sim ---
     sim_approval_rate: float = Field(default=0.9, alias="SIM_APPROVAL_RATE")
     sim_latency_ms: int = Field(default=40, alias="SIM_LATENCY_MS")
+    sim_failure_mode: str = Field(default="none", alias="SIM_FAILURE_MODE")
+
+    # --- service URLs (docs/07 §2, docs/01 §2) ---
+    representation_url: str = Field(
+        default="http://representation-service:8000", alias="REPRESENTATION_URL"
+    )
+    ml_scoring_url: str = Field(default="http://ml-scoring-service:8000", alias="ML_SCORING_URL")
+    llm_gateway_url: str = Field(default="http://llm-gateway:8000", alias="LLM_GATEWAY_URL")
+    decision_engine_url: str = Field(
+        default="http://decision-engine:8000", alias="DECISION_ENGINE_URL"
+    )
+    payment_processor_url: str = Field(
+        default="http://payment-processor-sim:8000", alias="PAYMENT_PROCESSOR_URL"
+    )
+    orchestrator_url: str = Field(
+        default="http://commerce-orchestrator:8000", alias="ORCHESTRATOR_URL"
+    )
+
+    # --- ml + decisioning policy ---
+    ml_models_dir: str = Field(default="/app/ml/models", alias="ML_MODELS_DIR")
+    missing_risk_fraud_policy: str = Field(default="CHALLENGE", alias="MISSING_RISK_FRAUD_POLICY")
 
     @field_validator("enabled_method_types", mode="before")
     @classmethod
