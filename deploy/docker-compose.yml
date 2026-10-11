@@ -114,6 +114,149 @@ services:
       retries: 10
       start_period: 5s
 
+  # --- application services (Phase 2 core decision path, docs/07 §1) ---
+  # Each builds from its service Dockerfile with the REPO ROOT as context so the
+  # acip-common workspace lib is available to `uv sync`. All listen on container port
+  # 8000 and stay internal to acip-net; ONLY checkout-api publishes a host port.
+  payment-processor-sim:
+    build:
+      context: ..
+      dockerfile: services/payment-processor-sim/Dockerfile
+    container_name: acip-payment-processor-sim
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      SIM_APPROVAL_RATE: ${SIM_APPROVAL_RATE:-0.9}
+      SIM_LATENCY_MS: ${SIM_LATENCY_MS:-40}
+      SIM_FAILURE_MODE: ${SIM_FAILURE_MODE:-none}
+    networks:
+      - acip-net
+
+  ml-scoring-service:
+    build:
+      context: ..
+      dockerfile: services/ml-scoring-service/Dockerfile
+    container_name: acip-ml-scoring-service
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      ML_MODELS_DIR: /app/ml/models
+    volumes:
+      # Trained artifacts are mounted read-only; the service discovers them via
+      # model_card.json and falls back to a heuristic if absent (docs/05 §5).
+      - ../ml/models:/app/ml/models:ro
+    networks:
+      - acip-net
+
+  llm-gateway:
+    build:
+      context: ..
+      dockerfile: services/llm-gateway/Dockerfile
+    container_name: acip-llm-gateway
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      # No cloud creds in the default stack: the breaker degrades to the mock provider
+      # (docs/04 §4) so the path runs credential-free.
+      LLM_PROVIDER: ${LLM_PROVIDER:-mock}
+      LLM_FALLBACK_PROVIDER: ${LLM_FALLBACK_PROVIDER:-mock}
+    networks:
+      - acip-net
+
+  decision-engine:
+    build:
+      context: ..
+      dockerfile: services/decision-engine/Dockerfile
+    container_name: acip-decision-engine
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      MISSING_RISK_FRAUD_POLICY: ${MISSING_RISK_FRAUD_POLICY:-CHALLENGE}
+    networks:
+      - acip-net
+
+  representation-service:
+    build:
+      context: ..
+      dockerfile: services/representation-service/Dockerfile
+    container_name: acip-representation-service
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      NEO4J_URI: ${NEO4J_URI:-bolt://neo4j:7687}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - acip-net
+
+  commerce-orchestrator:
+    build:
+      context: ..
+      dockerfile: services/commerce-orchestrator/Dockerfile
+    container_name: acip-commerce-orchestrator
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      KAFKA_BOOTSTRAP: ${KAFKA_BOOTSTRAP:-redpanda:9092}
+      POSTGRES_DSN: ${POSTGRES_DSN:-postgresql://acip:acip@postgres:5432/acip}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      REPRESENTATION_URL: http://representation-service:8000
+      DECISION_ENGINE_URL: http://decision-engine:8000
+      PAYMENT_PROCESSOR_URL: http://payment-processor-sim:8000
+      DECISION_DEADLINE_MS: ${DECISION_DEADLINE_MS:-800}
+    depends_on:
+      redpanda:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      representation-service:
+        condition: service_started
+      decision-engine:
+        condition: service_started
+      payment-processor-sim:
+        condition: service_started
+    networks:
+      - acip-net
+
+  checkout-api:
+    build:
+      context: ..
+      dockerfile: services/checkout-api/Dockerfile
+    container_name: acip-checkout-api
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      KAFKA_BOOTSTRAP: ${KAFKA_BOOTSTRAP:-redpanda:9092}
+      POSTGRES_DSN: ${POSTGRES_DSN:-postgresql://acip:acip@postgres:5432/acip}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      ORCHESTRATOR_URL: http://commerce-orchestrator:8000
+    ports:
+      - "8080:8000" # the ONLY publicly published app port
+    depends_on:
+      redpanda:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      commerce-orchestrator:
+        condition: service_started
+    networks:
+      - acip-net
+
   prometheus:
     image: prom/prometheus:v2.55.1
     container_name: acip-prometheus

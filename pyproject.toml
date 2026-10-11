@@ -13,7 +13,6 @@ members = ["libs/*", "services/*"]
 # matched member to carry a pyproject.toml. Exclude them until each Phase 2 FEAT
 # adds that service's package, at which point its dir drops out of this list.
 exclude = [
-    "services/checkout-api",
     "services/checkout-personalization-agent",
     "services/fraud-agent",
     "services/graph-projector",
@@ -25,6 +24,7 @@ exclude = [
 
 [tool.uv.sources]
 acip-common = { workspace = true }
+checkout-api = { workspace = true }
 commerce-orchestrator = { workspace = true }
 decision-engine = { workspace = true }
 llm-gateway = { workspace = true }
@@ -52,6 +52,7 @@ dev = [
     "payment-processor-sim",
     "commerce-orchestrator",
     "representation-service",
+    "checkout-api",
 ]
 
 [tool.ruff]
