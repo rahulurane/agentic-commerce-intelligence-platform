@@ -47,33 +47,48 @@ class PostgresReadModel:
         self._dsn = postgres_dsn
 
     def _fetch(self, transaction_id: str) -> tuple[Any, Any, list[Any]] | None:
-        """Load the (transaction, decision, verdicts) rows for ``transaction_id``."""
+        """Load the (transaction, decision, verdicts) rows for ``transaction_id``.
+
+        Returns ``None`` when the id is unknown OR when a read-model table does not yet
+        exist (``psycopg.errors.UndefinedTable``) — a never-seeded stack is a 404, not a
+        500 (docs/06 §1). A genuine connection/operational error still raises so the
+        route surfaces it as a 500 (fail-closed on real faults).
+        """
         import psycopg
         from psycopg.rows import dict_row
 
-        with psycopg.connect(self._dsn, connect_timeout=5, row_factory=dict_row) as conn:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT id, customer_id, amount, status, decision, created_at "
-                    "FROM transactions WHERE id = %s",
-                    (transaction_id,),
-                )
-                txn = cur.fetchone()
-                if txn is None:
-                    return None
-                cur.execute(
-                    "SELECT decision, composite_score, strategy "
-                    "FROM decisions WHERE transaction_id = %s",
-                    (transaction_id,),
-                )
-                decision = cur.fetchone()
-                cur.execute(
-                    "SELECT agent, score, decision_hint "
-                    "FROM agent_verdicts WHERE transaction_id = %s ORDER BY agent",
-                    (transaction_id,),
-                )
-                verdicts = list(cur.fetchall())
-        return txn, decision, verdicts
+        try:
+            with psycopg.connect(self._dsn, connect_timeout=5, row_factory=dict_row) as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "SELECT id, customer_id, amount, status, decision, created_at "
+                        "FROM transactions WHERE id = %s",
+                        (transaction_id,),
+                    )
+                    txn = cur.fetchone()
+                    if txn is None:
+                        return None
+                    cur.execute(
+                        "SELECT decision, composite_score, strategy "
+                        "FROM decisions WHERE transaction_id = %s",
+                        (transaction_id,),
+                    )
+                    decision = cur.fetchone()
+                    cur.execute(
+                        "SELECT agent, score, decision_hint "
+                        "FROM agent_verdicts WHERE transaction_id = %s ORDER BY agent",
+                        (transaction_id,),
+                    )
+                    verdicts = list(cur.fetchall())
+            return txn, decision, verdicts
+        except psycopg.errors.UndefinedTable:
+            # A missing read-model table (fresh/never-seeded stack) is an unknown id, not
+            # a server fault: return None so the route answers 404 rather than 500.
+            _log.info(
+                "read-model table missing; treating as unknown id",
+                extra={"transaction_id": transaction_id},
+            )
+            return None
 
     def read_transaction(self, transaction_id: str) -> dict[str, Any] | None:
         """Compose the ``GET /v1/transactions/{id}`` view (docs/06 §1)."""

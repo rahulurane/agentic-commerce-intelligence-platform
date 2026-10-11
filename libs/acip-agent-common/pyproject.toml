@@ -1,0 +1,22 @@
+[project]
+name = "acip-agent-common"
+version = "0.1.0"
+description = "ACIP shared agent scaffolding: uniform per-agent LangGraph graph, AgentRunner, templated-LLM-fallback rationale, health app (docs/02 §2.2, §6)"
+requires-python = ">=3.11"
+dependencies = [
+    "acip-common",
+    "langgraph==0.2.60",
+    "fastapi==0.115.6",
+    "uvicorn[standard]==0.34.0",
+    "httpx==0.28.1",
+]
+
+[tool.uv.sources]
+acip-common = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/acip_agent_common"]

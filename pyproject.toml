@@ -24,6 +24,7 @@ exclude = [
 
 [tool.uv.sources]
 acip-common = { workspace = true }
+acip-agent-common = { workspace = true }
 checkout-api = { workspace = true }
 commerce-orchestrator = { workspace = true }
 decision-engine = { workspace = true }
@@ -41,6 +42,7 @@ dev = [
     "mypy==1.13.0",
     "pytest==8.3.4",
     "acip-common",
+    "acip-agent-common",
     "neo4j==5.27.0",
     "psycopg[binary]==3.2.3",
     # Phase 2 service members, so a plain `uv sync` installs them into the dev env and
@@ -58,7 +60,7 @@ dev = [
 [tool.ruff]
 target-version = "py311"
 line-length = 100
-src = ["libs/acip-common/src", "ml", "scripts"]
+src = ["libs/acip-common/src", "libs/acip-agent-common/src", "ml", "scripts"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "W"]

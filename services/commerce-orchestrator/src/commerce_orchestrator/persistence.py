@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import logging
 
+from acip_common.bootstrap import ensure_read_model_schema
 from acip_common.schemas import DecisionHint, DecisionRenderedPayload, SharedRepresentation, Verdict
 
 _log = logging.getLogger("commerce_orchestrator.persistence")
@@ -52,7 +53,12 @@ def persist_decision(
     Idempotent: re-running with the same ``transaction_id`` overwrites the prior rows
     (``ON CONFLICT DO UPDATE``) so crash-resume never duplicates. A connection failure
     is logged and swallowed (returns ``False``) so the core path survives a DB outage.
+
+    Runs :func:`acip_common.bootstrap.ensure_read_model_schema` first (docs/03 §4) so a
+    fresh stack brought up with NO seed still has the tables and persists/serves reads;
+    the bootstrap is itself best-effort and never raises.
     """
+    ensure_read_model_schema(postgres_dsn)
     try:
         import psycopg
     except ImportError as exc:  # pragma: no cover - dependency guard

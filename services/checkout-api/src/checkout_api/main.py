@@ -239,11 +239,20 @@ def checkout(
 
         if async_mode:
             _log.info("checkout accepted (async)", extra={"transaction_id": transaction_id})
-            response.status_code = 202
-            return {
+            accepted = {
                 "transaction_id": transaction_id,
                 "status_url": f"/v1/transactions/{transaction_id}",
             }
+            # Honor idempotency in async mode exactly like sync (docs/06 §5): store the
+            # minted id + the 202 body so a repeat key replays the SAME transaction_id
+            # (no re-mint, no second txn.created) via the replay check above.
+            if req.idempotency_key is not None:
+                idempotency.put(
+                    req.idempotency_key,
+                    StoredDecision(transaction_id=transaction_id, decision=accepted),
+                )
+            response.status_code = 202
+            return accepted
 
         decision = _evaluate_sync(
             settings, transaction_id=transaction_id, trace_id=trace_id, req=req

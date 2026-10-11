@@ -88,10 +88,32 @@ class Settings(BaseSettings):
     ml_models_dir: str = Field(default="/app/ml/models", alias="ML_MODELS_DIR")
     missing_risk_fraud_policy: str = Field(default="CHALLENGE", alias="MISSING_RISK_FRAUD_POLICY")
 
+    # --- policy + merchant agent config (docs/02 §3) ---
+    # NoDecode: parse the plain comma-separated env string via the validator below rather
+    # than pydantic-settings' JSON decoding (same pattern as ENABLED_METHOD_TYPES). The
+    # default 'XX' matches the seeded sanctioned_geo scenario so the policy agent DENIES
+    # it with no .env present.
+    policy_sanctioned_geos: Annotated[list[str], NoDecode] = Field(
+        default_factory=lambda: ["XX"],
+        alias="POLICY_SANCTIONED_GEOS",
+    )
+    policy_high_value_threshold: float = Field(default=4000.0, alias="POLICY_HIGH_VALUE_THRESHOLD")
+    merchant_high_value_challenge: float = Field(
+        default=4000.0, alias="MERCHANT_HIGH_VALUE_CHALLENGE"
+    )
+
     @field_validator("enabled_method_types", mode="before")
     @classmethod
     def _split_method_types(cls, value: object) -> object:
         """Parse the comma-separated ``ENABLED_METHOD_TYPES`` env string into a list."""
+        if isinstance(value, str):
+            return [item.strip() for item in value.split(",") if item.strip()]
+        return value
+
+    @field_validator("policy_sanctioned_geos", mode="before")
+    @classmethod
+    def _split_sanctioned_geos(cls, value: object) -> object:
+        """Parse the comma-separated ``POLICY_SANCTIONED_GEOS`` env string into a list."""
         if isinstance(value, str):
             return [item.strip() for item in value.split(",") if item.strip()]
         return value

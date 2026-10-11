@@ -204,6 +204,24 @@ def test_idempotent_repeat_returns_original_and_does_not_recharge(
     assert mock_orchestrator["calls"] == 1
 
 
+def test_async_idempotent_repeat_returns_same_txn_and_emits_once(fakes: dict[str, Any]) -> None:
+    """A repeated async idempotency_key replays the same txn id and emits txn.created once."""
+    client = TestClient(app)
+    body = _valid_body()
+    body["idempotency_key"] = "idem_async_1"
+
+    first = client.post("/v1/checkout?mode=async", json=body)
+    assert first.status_code == 202
+    first_txn = first.json()["transaction_id"]
+
+    second = client.post("/v1/checkout?mode=async", json=body)
+    # Replayed from the store: same transaction id, same body, no re-mint.
+    assert second.json()["transaction_id"] == first_txn
+    assert second.json() == first.json()
+    # txn.created was published exactly once across the two identical async requests.
+    assert fakes["producer"].published == [("txn.lifecycle", "txn.created")]
+
+
 def test_async_mode_returns_202_with_status_url(fakes: dict[str, Any]) -> None:
     client = TestClient(app)
     resp = client.post("/v1/checkout?mode=async", json=_valid_body())
@@ -235,6 +253,46 @@ def test_explain_found_and_404(fakes: dict[str, Any]) -> None:
     assert body["final_decision"]["decision"] == "CHALLENGE"
     assert body["strategy"] == "weighted_veto"
     assert client.get("/v1/transactions/txn_missing/explain").status_code == 404
+
+
+class _MissingTableReadModel:
+    """Read model that simulates a never-seeded stack: tables do not exist -> None.
+
+    ``PostgresReadModel._fetch`` catches ``psycopg.errors.UndefinedTable`` and returns
+    ``None`` so the route answers 404; this fake short-circuits to that same ``None`` so
+    the route behavior (404, not 500) is exercised without a live Postgres.
+    """
+
+    def read_transaction(self, transaction_id: str) -> dict[str, Any] | None:
+        return None
+
+    def read_explain(self, transaction_id: str) -> dict[str, Any] | None:
+        return None
+
+
+def test_missing_table_returns_404_not_500(fakes: dict[str, Any]) -> None:
+    # Swap in a read model that behaves as a never-seeded stack (no tables -> None).
+    app.dependency_overrides[get_read_model] = lambda: _MissingTableReadModel()
+    client = TestClient(app)
+    assert client.get("/v1/transactions/txn_any").status_code == 404
+    assert client.get("/v1/transactions/txn_any/explain").status_code == 404
+
+
+def test_postgres_read_model_missing_table_returns_none(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """``PostgresReadModel._fetch`` maps a missing table to ``None`` (unknown id -> 404)."""
+    import psycopg
+    from checkout_api.reads import PostgresReadModel
+
+    def _raise_undefined_table(*args: Any, **kwargs: Any) -> Any:
+        raise psycopg.errors.UndefinedTable('relation "transactions" does not exist')
+
+    # reads.py imports psycopg lazily inside _fetch, so patch the real module attribute.
+    monkeypatch.setattr(psycopg, "connect", _raise_undefined_table)
+    model = PostgresReadModel("postgresql://unseeded")
+    assert model.read_transaction("txn_x") is None
+    assert model.read_explain("txn_x") is None
 
 
 def test_health_and_ready() -> None:
