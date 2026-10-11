@@ -15,22 +15,22 @@ members = ["libs/*", "services/*"]
 exclude = [
     "services/checkout-api",
     "services/checkout-personalization-agent",
-    "services/commerce-orchestrator",
     "services/fraud-agent",
     "services/graph-projector",
     "services/merchant-agent",
     "services/policy-agent",
-    "services/representation-service",
     "services/risk-agent",
     "services/routing-agent",
 ]
 
 [tool.uv.sources]
 acip-common = { workspace = true }
+commerce-orchestrator = { workspace = true }
 decision-engine = { workspace = true }
 llm-gateway = { workspace = true }
 ml-scoring-service = { workspace = true }
 payment-processor-sim = { workspace = true }
+representation-service = { workspace = true }
 
 [dependency-groups]
 # Workspace-wide dev tooling plus the deps scripts/seed.py needs, so `make seed`
@@ -50,6 +50,8 @@ dev = [
     "llm-gateway",
     "ml-scoring-service",
     "payment-processor-sim",
+    "commerce-orchestrator",
+    "representation-service",
 ]
 
 [tool.ruff]

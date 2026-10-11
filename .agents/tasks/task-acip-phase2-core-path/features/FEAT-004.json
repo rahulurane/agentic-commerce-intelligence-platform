@@ -1,0 +1,32 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "The public edge + full-stack wiring: checkout-api (public POST /v1/checkout with sync-default/async modes, idempotency, GET /v1/transactions/{id} and /explain reading Postgres read models), plus extending deploy/docker-compose.yml with all seven Phase 2 services and updating the Makefile app-service targets, and finally the end-to-end core-path smoke proving a decision with NO agents and NO cloud creds. Depends on FEAT-003 (calls commerce-orchestrator /internal/evaluate and reads the Postgres trace the orchestrator persists) and FEAT-002/FEAT-001. This is the last FEAT and leaves the whole stack runnable.",
+  "status": "pending",
+  "steps": [
+    "checkout-api (docs/06 §1, §4, §5): services/checkout-api/ with src/checkout_api/{__init__.py,main.py,idempotency.py,reads.py} and tests/test_checkout.py. POST /v1/checkout validates the body against the docs/06 §1 shape (reuse PaymentMethodRef, CheckoutContext; fields merchant_id, customer_id, amount, currency, payment_method, context, idempotency_key) -> 422 on validation error. Assign a transaction_id (e.g. 'txn_' + uuid). Honor idempotency_key via idempotency.py (Redis-backed): a repeat key returns the ORIGINAL stored decision and never re-triggers evaluation/charge (docs/06 §5). Emit txn.created EventEnvelope to TXN_LIFECYCLE (EventProducer, payload TxnCreatedPayload) for the event log. DEFAULT sync mode: call ORCHESTRATOR_URL POST /internal/evaluate and return the decision JSON (shape in docs/06 §1 incl. transaction_id, decision, route, composite_score, explanation, recommended_method, verdicts, trace_id). Async mode (e.g. ?mode=async or a header): return 202 + {transaction_id, status_url: '/v1/transactions/<id>'}. GET /v1/transactions/{id} returns current state + decision + per-agent verdicts from Postgres read models (reads.py). GET /v1/transactions/{id}/explain returns the full decision trace (inputs, verdicts/evidence, strategy, final decision). Reuse EventProducer, topic_for/TXN_LIFECYCLE, EventEnvelope, EventType, TxnCreatedPayload, PaymentMethodRef, CheckoutContext, Settings, bind_trace_id. Pin deps httpx, redis, psycopg[binary].",
+    "Register checkout-api as a uv workspace member with acip-common = { workspace = true }; non-root python:3.11-slim Dockerfile via uv; GET /healthz + /readyz.",
+    "Extend deploy/docker-compose.yml WITHOUT breaking the infra-only stack: add services representation-service, ml-scoring-service, llm-gateway, decision-engine, payment-processor-sim, commerce-orchestrator, checkout-api. Each: build from its services/<name>/Dockerfile (context repo root so acip-common is available), env_file ../.env plus inline defaults mirroring Settings, depends_on the infra healthchecks (redpanda/neo4j/postgres/redis service_healthy as relevant), attached to acip-net, container ports internal only. ONLY checkout-api publishes a host port (e.g. 8080:8000). Mount ../ml/models read-only into ml-scoring-service at ML_MODELS_DIR. Keep the existing infra services unchanged.",
+    "Update the Makefile (docs/07 §3): make build builds service images too (compose build already covers all); make up brings up infra + services (compose up -d already covers all once services are in the file - confirm); flesh out the stubbed demo target to run a minimal core-path smoke (POST a clean checkout to checkout-api on the published port, assert a decision returns) via an optional scripts/demo.py; flesh out logs to tail service logs (compose logs -f). Do not remove the Phase 1 infra/ml/seed/tooling targets.",
+    "Add scripts/sample_checkout.json (a clean low-value transaction body) and optionally scripts/demo.py used by make demo.",
+    "End-to-end verification: run the full gate and the core-path smoke (see verification). Confirm a decision returns with NO agents and NO cloud creds (orchestrator deadline -> decide_partial -> configured missing-verdict default; llm-gateway on mock; ml-scoring on real artifacts if present else heuristic). Clean up any temp files created during verification."
+  ],
+  "acceptance_criteria": [
+    "POST /v1/checkout in default sync mode returns the docs/06 §1 decision JSON; invalid bodies return 422; a repeated idempotency_key returns the original decision and does not re-charge.",
+    "Async mode returns 202 with a status_url; GET /v1/transactions/{id} and /v1/transactions/{id}/explain read the Postgres read models the orchestrator persisted.",
+    "deploy/docker-compose.yml adds all seven services, only checkout-api exposes a host port, services depend on infra healthchecks, and the infra-only stack still comes up; `docker compose -f deploy/docker-compose.yml config` validates.",
+    "The Makefile up/build/demo/logs targets cover the services without removing Phase 1 targets.",
+    "A POST /v1/checkout smoke against the running stack returns a JSON decision with NO agents and NO cloud creds, and orchestrator logs show the zero-verdict decide_partial path."
+  ],
+  "verification": [
+    "uv sync",
+    "uv run ruff check .  (clean)",
+    "uv run black --check .  (clean)",
+    "uv run mypy libs/acip-common/src services  (clean, strict)",
+    "uv run pytest libs/acip-common services  (all pass, incl. checkout idempotency + sync/async mode tests)",
+    "docker compose -f deploy/docker-compose.yml config  (validates; no YAML/schema errors)",
+    "make up && sleep for healthchecks, then: curl -s -X POST localhost:8080/v1/checkout -H 'content-type: application/json' -d @scripts/sample_checkout.json  (returns a JSON decision); then make down"
+  ],
+  "blocked_reason": null,
+  "findings": ""
+}
