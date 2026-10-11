@@ -16,13 +16,9 @@ exclude = [
     "services/checkout-api",
     "services/checkout-personalization-agent",
     "services/commerce-orchestrator",
-    "services/decision-engine",
     "services/fraud-agent",
     "services/graph-projector",
-    "services/llm-gateway",
     "services/merchant-agent",
-    "services/ml-scoring-service",
-    "services/payment-processor-sim",
     "services/policy-agent",
     "services/representation-service",
     "services/risk-agent",
@@ -31,6 +27,10 @@ exclude = [
 
 [tool.uv.sources]
 acip-common = { workspace = true }
+decision-engine = { workspace = true }
+llm-gateway = { workspace = true }
+ml-scoring-service = { workspace = true }
+payment-processor-sim = { workspace = true }
 
 [dependency-groups]
 # Workspace-wide dev tooling plus the deps scripts/seed.py needs, so `make seed`
@@ -43,6 +43,13 @@ dev = [
     "acip-common",
     "neo4j==5.27.0",
     "psycopg[binary]==3.2.3",
+    # Phase 2 service members, so a plain `uv sync` installs them into the dev env and
+    # the `uv run pytest services` / mypy gate resolves their imports. Each remains an
+    # independently buildable workspace package; this only wires them into dev tooling.
+    "decision-engine",
+    "llm-gateway",
+    "ml-scoring-service",
+    "payment-processor-sim",
 ]
 
 [tool.ruff]
@@ -67,4 +74,17 @@ explicit_package_bases = true
 [[tool.mypy.overrides]]
 # confluent-kafka ships no type stubs / py.typed marker.
 module = ["confluent_kafka", "confluent_kafka.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# ML + GenAI SDKs ship no type stubs; ml-scoring imports xgboost/lightgbm and the
+# llm-gateway Gemini adapter imports google.genai lazily.
+module = [
+    "xgboost",
+    "xgboost.*",
+    "lightgbm",
+    "lightgbm.*",
+    "google",
+    "google.*",
+]
 ignore_missing_imports = true
