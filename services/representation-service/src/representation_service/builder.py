@@ -124,6 +124,8 @@ def build_representation(
             merchant_id=merchant_id,
             customer_id=customer_id,
         ),
+        home_geo=graph.home_geo,
+        txn_geo=txn_geo,
         features=features,
         graph_signals=graph_signals,
         method_history=method_history,

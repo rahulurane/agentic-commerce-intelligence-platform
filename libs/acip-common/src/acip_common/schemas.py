@@ -110,6 +110,12 @@ class SharedRepresentation(_Strict):
     transaction_id: str
     built_at: datetime
     transaction: TransactionCore
+    # The customer's home geo and the transaction geo, carried through so the policy
+    # agent can apply sanctioned-geo rules (docs/02 §3). Optional/additive: the feature
+    # row already folds the pair into ``geo_mismatch``; these keep the raw codes so a
+    # specific geo (e.g. a sanctioned 'XX') can be matched. ``None`` when unknown.
+    home_geo: str | None = None
+    txn_geo: str | None = None
     features: dict[str, float] = Field(default_factory=dict)
     graph_signals: dict[str, float] = Field(default_factory=dict)
     method_history: dict[str, MethodHistoryEntry] = Field(default_factory=dict)

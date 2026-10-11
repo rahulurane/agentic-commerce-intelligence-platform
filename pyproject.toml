@@ -13,25 +13,25 @@ members = ["libs/*", "services/*"]
 # matched member to carry a pyproject.toml. Exclude them until each Phase 2 FEAT
 # adds that service's package, at which point its dir drops out of this list.
 exclude = [
-    "services/checkout-personalization-agent",
-    "services/fraud-agent",
     "services/graph-projector",
-    "services/merchant-agent",
-    "services/policy-agent",
-    "services/risk-agent",
-    "services/routing-agent",
 ]
 
 [tool.uv.sources]
 acip-common = { workspace = true }
 acip-agent-common = { workspace = true }
 checkout-api = { workspace = true }
+checkout-personalization-agent = { workspace = true }
 commerce-orchestrator = { workspace = true }
 decision-engine = { workspace = true }
+fraud-agent = { workspace = true }
 llm-gateway = { workspace = true }
+merchant-agent = { workspace = true }
 ml-scoring-service = { workspace = true }
 payment-processor-sim = { workspace = true }
+policy-agent = { workspace = true }
 representation-service = { workspace = true }
+risk-agent = { workspace = true }
+routing-agent = { workspace = true }
 
 [dependency-groups]
 # Workspace-wide dev tooling plus the deps scripts/seed.py needs, so `make seed`
@@ -55,6 +55,14 @@ dev = [
     "commerce-orchestrator",
     "representation-service",
     "checkout-api",
+    # Phase 3 FEAT-002 agent members, wired like the Phase 2 services so a plain
+    # `uv sync` installs them and the pytest / mypy gate resolves their imports.
+    "risk-agent",
+    "fraud-agent",
+    "routing-agent",
+    "policy-agent",
+    "merchant-agent",
+    "checkout-personalization-agent",
 ]
 
 [tool.ruff]

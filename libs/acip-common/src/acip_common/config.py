@@ -97,7 +97,14 @@ class Settings(BaseSettings):
         default_factory=lambda: ["XX"],
         alias="POLICY_SANCTIONED_GEOS",
     )
-    policy_high_value_threshold: float = Field(default=4000.0, alias="POLICY_HIGH_VALUE_THRESHOLD")
+    # The policy HARD-VETO amount ceiling: an absolute "not allowed" regulatory cap.
+    # Deliberately separate from (and well above) MERCHANT_HIGH_VALUE_CHALLENGE: a policy
+    # DECLINE is a hard veto while the merchant high-value rule is only a soft CHALLENGE
+    # upgrade, so the two controls must never fire on the same signal at the same
+    # threshold (the decision-engine checks the policy veto before the merchant upgrade).
+    # Default 10000.0 sits above the high_value_midrisk amount (4800), so that scenario
+    # CHALLENGEs via the merchant rule instead of being policy-declined.
+    policy_amount_hard_cap: float = Field(default=10000.0, alias="POLICY_AMOUNT_HARD_CAP")
     merchant_high_value_challenge: float = Field(
         default=4000.0, alias="MERCHANT_HIGH_VALUE_CHALLENGE"
     )

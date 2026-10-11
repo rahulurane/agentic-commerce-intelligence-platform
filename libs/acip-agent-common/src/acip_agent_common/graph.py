@@ -49,6 +49,12 @@ class ScoreResult:
     model_version: str
     evidence: list[Evidence] = field(default_factory=list)
     confidence: float = 1.0
+    # Optional structured rationale an agent sets directly instead of the LLM text. The
+    # checkout-personalization agent uses this to carry its recommended method name in
+    # the verdict rationale (the decision-engine reads it as _recommended_method); when
+    # ``None`` (the default for every other agent) the reason node's LLM/templated
+    # rationale is used (docs/02 §3.2, §5).
+    rationale_override: str | None = None
 
 
 # An agent's scoring function: representation (+ gathered signals) -> ScoreResult. This is
@@ -80,6 +86,7 @@ class AgentGraphState(TypedDict, total=False):
     model_version: str
     confidence: float
     evidence: list[dict[str, Any]]
+    rationale_override: str | None
     rationale: str
     degraded: bool
     verdict: dict[str, Any]
@@ -126,6 +133,7 @@ def _score_node(state: AgentGraphState, config: dict[str, Any]) -> dict[str, Any
         "model_version": result.model_version,
         "confidence": result.confidence,
         "evidence": [e.model_dump(mode="json") for e in result.evidence],
+        "rationale_override": result.rationale_override,
     }
 
 
@@ -150,11 +158,15 @@ def _reason_node(state: AgentGraphState, config: dict[str, Any]) -> dict[str, An
 
 def _assemble_verdict_node(state: AgentGraphState, config: dict[str, Any]) -> dict[str, Any]:
     """Build the ``acip_common`` ``Verdict`` from the scored + reasoned state (docs/02 §4)."""
+    # An agent may set a structured rationale (e.g. a recommended method name) that the
+    # downstream aggregator reads; it takes precedence over the LLM/templated rationale.
+    override = state.get("rationale_override")
+    rationale = override if override else state.get("rationale", "")
     verdict = Verdict(
         decision_hint=DecisionHint(state["decision_hint"]),
         score=state["agent_score"],
         confidence=state.get("confidence", 1.0),
-        rationale=state.get("rationale", ""),
+        rationale=rationale,
         evidence=[Evidence.model_validate(e) for e in state.get("evidence", [])],
         model_version=state["model_version"],
         degraded=state.get("degraded", False),

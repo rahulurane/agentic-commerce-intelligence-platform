@@ -11,12 +11,18 @@ members = [
     "acip-agent-common",
     "acip-common",
     "checkout-api",
+    "checkout-personalization-agent",
     "commerce-orchestrator",
     "decision-engine",
+    "fraud-agent",
     "llm-gateway",
+    "merchant-agent",
     "ml-scoring-service",
     "payment-processor-sim",
+    "policy-agent",
     "representation-service",
+    "risk-agent",
+    "routing-agent",
 ]
 
 [[package]]
@@ -30,16 +36,22 @@ dev = [
     { name = "acip-common" },
     { name = "black" },
     { name = "checkout-api" },
+    { name = "checkout-personalization-agent" },
     { name = "commerce-orchestrator" },
     { name = "decision-engine" },
+    { name = "fraud-agent" },
     { name = "llm-gateway" },
+    { name = "merchant-agent" },
     { name = "ml-scoring-service" },
     { name = "mypy" },
     { name = "neo4j" },
     { name = "payment-processor-sim" },
+    { name = "policy-agent" },
     { name = "psycopg", extra = ["binary"] },
     { name = "pytest" },
     { name = "representation-service" },
+    { name = "risk-agent" },
+    { name = "routing-agent" },
     { name = "ruff" },
 ]
 
@@ -51,16 +63,22 @@ dev = [
     { name = "acip-common", editable = "libs/acip-common" },
     { name = "black", specifier = "==24.10.0" },
     { name = "checkout-api", editable = "services/checkout-api" },
+    { name = "checkout-personalization-agent", editable = "services/checkout-personalization-agent" },
     { name = "commerce-orchestrator", editable = "services/commerce-orchestrator" },
     { name = "decision-engine", editable = "services/decision-engine" },
+    { name = "fraud-agent", editable = "services/fraud-agent" },
     { name = "llm-gateway", editable = "services/llm-gateway" },
+    { name = "merchant-agent", editable = "services/merchant-agent" },
     { name = "ml-scoring-service", editable = "services/ml-scoring-service" },
     { name = "mypy", specifier = "==1.13.0" },
     { name = "neo4j", specifier = "==5.27.0" },
     { name = "payment-processor-sim", editable = "services/payment-processor-sim" },
+    { name = "policy-agent", editable = "services/policy-agent" },
     { name = "psycopg", extras = ["binary"], specifier = "==3.2.3" },
     { name = "pytest", specifier = "==8.3.4" },
     { name = "representation-service", editable = "services/representation-service" },
+    { name = "risk-agent", editable = "services/risk-agent" },
+    { name = "routing-agent", editable = "services/routing-agent" },
     { name = "ruff", specifier = "==0.8.4" },
 ]
 
@@ -439,6 +457,27 @@ requires-dist = [
 ]
 
 [[package]]
+name = "checkout-personalization-agent"
+version = "0.1.0"
+source = { editable = "services/checkout-personalization-agent" }
+dependencies = [
+    { name = "acip-agent-common" },
+    { name = "acip-common" },
+    { name = "fastapi" },
+    { name = "httpx" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "acip-agent-common", editable = "libs/acip-agent-common" },
+    { name = "acip-common", editable = "libs/acip-common" },
+    { name = "fastapi", specifier = "==0.115.6" },
+    { name = "httpx", specifier = "==0.28.1" },
+    { name = "uvicorn", extras = ["standard"], specifier = "==0.34.0" },
+]
+
+[[package]]
 name = "click"
 version = "8.5.0"
 source = { registry = "https://pypi.org/simple" }
@@ -604,6 +643,27 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/93/72/d83b98cd106541e8f5e5bfab8ef2974ab45a62e8a6c5b5e6940f26d2ed4b/fastapi-0.115.6.tar.gz", hash = "sha256:9ec46f7addc14ea472958a96aae5b5de65f39721a46aaf5705c480d9a8b76654", size = 301336 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/52/b3/7e4df40e585df024fac2f80d1a2d579c854ac37109675db2b0cc22c0bb9e/fastapi-0.115.6-py3-none-any.whl", hash = "sha256:e9240b29e36fa8f4bb7290316988e90c381e5092e0cbe84e7818cc3713bcf305", size = 94843 },
+]
+
+[[package]]
+name = "fraud-agent"
+version = "0.1.0"
+source = { editable = "services/fraud-agent" }
+dependencies = [
+    { name = "acip-agent-common" },
+    { name = "acip-common" },
+    { name = "fastapi" },
+    { name = "httpx" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "acip-agent-common", editable = "libs/acip-agent-common" },
+    { name = "acip-common", editable = "libs/acip-common" },
+    { name = "fastapi", specifier = "==0.115.6" },
+    { name = "httpx", specifier = "==0.28.1" },
+    { name = "uvicorn", extras = ["standard"], specifier = "==0.34.0" },
 ]
 
 [[package]]
@@ -930,6 +990,27 @@ requires-dist = [
 ]
 
 [[package]]
+name = "merchant-agent"
+version = "0.1.0"
+source = { editable = "services/merchant-agent" }
+dependencies = [
+    { name = "acip-agent-common" },
+    { name = "acip-common" },
+    { name = "fastapi" },
+    { name = "httpx" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "acip-agent-common", editable = "libs/acip-agent-common" },
+    { name = "acip-common", editable = "libs/acip-common" },
+    { name = "fastapi", specifier = "==0.115.6" },
+    { name = "httpx", specifier = "==0.28.1" },
+    { name = "uvicorn", extras = ["standard"], specifier = "==0.34.0" },
+]
+
+[[package]]
 name = "ml-scoring-service"
 version = "0.1.0"
 source = { editable = "services/ml-scoring-service" }
@@ -1219,6 +1300,27 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/f9/e2/3e91f31a7d2b083fe6ef3fa267035b518369d9511ffab804f839851d2779/pluggy-1.6.0.tar.gz", hash = "sha256:7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3", size = 69412 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/54/20/4d324d65cc6d9205fabedc306948156824eb9f0ee1633355a8f7ec5c66bf/pluggy-1.6.0-py3-none-any.whl", hash = "sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746", size = 20538 },
+]
+
+[[package]]
+name = "policy-agent"
+version = "0.1.0"
+source = { editable = "services/policy-agent" }
+dependencies = [
+    { name = "acip-agent-common" },
+    { name = "acip-common" },
+    { name = "fastapi" },
+    { name = "httpx" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "acip-agent-common", editable = "libs/acip-agent-common" },
+    { name = "acip-common", editable = "libs/acip-common" },
+    { name = "fastapi", specifier = "==0.115.6" },
+    { name = "httpx", specifier = "==0.28.1" },
+    { name = "uvicorn", extras = ["standard"], specifier = "==0.34.0" },
 ]
 
 [[package]]
@@ -1537,6 +1639,48 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/f3/61/d7545dafb7ac2230c70d38d31cbfe4cc64f7144dc41f6e4e4b78ecd9f5bb/requests-toolbelt-1.0.0.tar.gz", hash = "sha256:7681a0a3d047012b5bdc0ee37d7f8f07ebe76ab08caeccfc3921ce23c88d5bc6", size = 206888 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/3f/51/d4db610ef29373b879047326cbf6fa98b6c1969d6f6dc423279de2b1be2c/requests_toolbelt-1.0.0-py2.py3-none-any.whl", hash = "sha256:cccfdd665f0a24fcf4726e690f65639d272bb0637b9b92dfd91a5568ccf6bd06", size = 54481 },
+]
+
+[[package]]
+name = "risk-agent"
+version = "0.1.0"
+source = { editable = "services/risk-agent" }
+dependencies = [
+    { name = "acip-agent-common" },
+    { name = "acip-common" },
+    { name = "fastapi" },
+    { name = "httpx" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "acip-agent-common", editable = "libs/acip-agent-common" },
+    { name = "acip-common", editable = "libs/acip-common" },
+    { name = "fastapi", specifier = "==0.115.6" },
+    { name = "httpx", specifier = "==0.28.1" },
+    { name = "uvicorn", extras = ["standard"], specifier = "==0.34.0" },
+]
+
+[[package]]
+name = "routing-agent"
+version = "0.1.0"
+source = { editable = "services/routing-agent" }
+dependencies = [
+    { name = "acip-agent-common" },
+    { name = "acip-common" },
+    { name = "fastapi" },
+    { name = "httpx" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "acip-agent-common", editable = "libs/acip-agent-common" },
+    { name = "acip-common", editable = "libs/acip-common" },
+    { name = "fastapi", specifier = "==0.115.6" },
+    { name = "httpx", specifier = "==0.28.1" },
+    { name = "uvicorn", extras = ["standard"], specifier = "==0.34.0" },
 ]
 
 [[package]]
