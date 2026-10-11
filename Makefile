@@ -1,5 +1,5 @@
-# ACIP operator UX (docs/07 §3). Phase 1 implements the foundation targets; the
-# application-service targets are stubbed until those services exist.
+# ACIP operator UX (docs/07 §3). The full stack is the backing infra plus the 14
+# application services (7 Phase-2 core-path + the 6 Phase-3 agents + graph-projector).
 
 COMPOSE := docker compose -f deploy/docker-compose.yml
 
@@ -10,11 +10,11 @@ help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 		| awk 'BEGIN {FS = ":.*?## "} {printf "  %-10s %s\n", $$1, $$2}'
 
-# --- stack (docs/07 §1): infra + the seven Phase 2 services ---
-build: ## Build/pull all images (infra + the seven services)
+# --- stack (docs/07 §1): infra + the 14 application services ---
+build: ## Build/pull all images (infra + the 14 services)
 	$(COMPOSE) build
 
-up: ## Start the full stack (infra + services); only checkout-api on :8080
+up: ## Start the full stack (infra + 14 services); only checkout-api on :8080
 	$(COMPOSE) up -d
 
 up-infra: ## Start infra only (Kafka/Neo4j/Postgres/Redis/observability)
@@ -47,12 +47,14 @@ test: ## Run unit tests across acip-common + all services
 	uv run pytest libs/acip-common services
 
 # --- demo / smoke (docs/06 §1, §4) ---
-# Minimal core-path smoke: POST a clean checkout to the running checkout-api and print
-# the decision. Proves the no-agents end-to-end path reaches a decision. The full
-# four-scenario demo with all agents is a later phase.
-demo: smoke ## Run the minimal core-path smoke (alias of `smoke`)
+# Five-scenario demo: POST one checkout per seeded scenario to the running checkout-api
+# and assert each decision (clean_shopper->APPROVE, ring_member->DECLINE,
+# high_value_midrisk->CHALLENGE, sanctioned_geo->DECLINE, unhealthy_preferred_route->
+# APPROVE on an alternate route). Exits non-zero on any mismatch so `make demo` fails
+# loudly. Run `make seed` first so the agents see the seeded graph signals.
+demo: smoke ## Run the five-scenario demo driver (alias of `smoke`)
 
-smoke: ## POST a sample checkout to the running stack and print the decision
+smoke: ## POST the five seeded scenarios to the running stack and assert each decision
 	uv run python scripts/demo.py
 
 logs: ## Tail aggregated service logs (Ctrl-C to stop)

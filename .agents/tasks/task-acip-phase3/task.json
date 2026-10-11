@@ -1,0 +1,7 @@
+{
+  "task_id": "task-acip-phase3",
+  "task_description": "ACIP Phase 3: land the three Phase-2 carryover fixes (runtime read-model bootstrap, 404-not-500 reads, async idempotency), the six evaluating agents (risk, fraud, routing, policy, merchant, checkout-personalization) as async Kafka consumers producing agent.verdict.produced, the graph-projector that owns runtime read-model/Neo4j projection, and the compose/Makefile/uv-workspace wiring plus a five-scenario demo. Everything reuses acip-common contracts; stay on feat/phase1-foundation; do not modify docs/.",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
+  "blocked_reason": null
+}

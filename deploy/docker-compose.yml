@@ -257,6 +257,176 @@ services:
     networks:
       - acip-net
 
+  # --- Phase 3 evaluating agents (docs/02 §3) ---
+  # The six agents share one build/runtime shape: they consume txn.evaluate from
+  # Redpanda, read their slice of the shared representation, call ml-scoring / llm-gateway
+  # over HTTP, and publish agent.verdict.produced. They mount NO ml/models volume (the
+  # ml call is HTTP to ml-scoring-service) and publish NO host port — all internal on
+  # acip-net container port 8000.
+  risk-agent:
+    build:
+      context: ..
+      dockerfile: services/risk-agent/Dockerfile
+    container_name: acip-risk-agent
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      KAFKA_BOOTSTRAP: ${KAFKA_BOOTSTRAP:-redpanda:9092}
+      LLM_GATEWAY_URL: http://llm-gateway:8000
+      ML_SCORING_URL: http://ml-scoring-service:8000
+      APPROVE_MAX: ${APPROVE_MAX:-0.35}
+      CHALLENGE_MAX: ${CHALLENGE_MAX:-0.70}
+    depends_on:
+      redpanda:
+        condition: service_healthy
+      llm-gateway:
+        condition: service_started
+      ml-scoring-service:
+        condition: service_started
+    networks:
+      - acip-net
+
+  fraud-agent:
+    build:
+      context: ..
+      dockerfile: services/fraud-agent/Dockerfile
+    container_name: acip-fraud-agent
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      KAFKA_BOOTSTRAP: ${KAFKA_BOOTSTRAP:-redpanda:9092}
+      LLM_GATEWAY_URL: http://llm-gateway:8000
+      ML_SCORING_URL: http://ml-scoring-service:8000
+      FRAUD_BLOCK_THRESHOLD: ${FRAUD_BLOCK_THRESHOLD:-0.85}
+      APPROVE_MAX: ${APPROVE_MAX:-0.35}
+      CHALLENGE_MAX: ${CHALLENGE_MAX:-0.70}
+    depends_on:
+      redpanda:
+        condition: service_healthy
+      llm-gateway:
+        condition: service_started
+      ml-scoring-service:
+        condition: service_started
+    networks:
+      - acip-net
+
+  routing-agent:
+    build:
+      context: ..
+      dockerfile: services/routing-agent/Dockerfile
+    container_name: acip-routing-agent
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      KAFKA_BOOTSTRAP: ${KAFKA_BOOTSTRAP:-redpanda:9092}
+      LLM_GATEWAY_URL: http://llm-gateway:8000
+      ML_SCORING_URL: http://ml-scoring-service:8000
+    depends_on:
+      redpanda:
+        condition: service_healthy
+      llm-gateway:
+        condition: service_started
+      ml-scoring-service:
+        condition: service_started
+    networks:
+      - acip-net
+
+  policy-agent:
+    build:
+      context: ..
+      dockerfile: services/policy-agent/Dockerfile
+    container_name: acip-policy-agent
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      KAFKA_BOOTSTRAP: ${KAFKA_BOOTSTRAP:-redpanda:9092}
+      LLM_GATEWAY_URL: http://llm-gateway:8000
+      ML_SCORING_URL: http://ml-scoring-service:8000
+      POLICY_SANCTIONED_GEOS: ${POLICY_SANCTIONED_GEOS:-XX}
+      POLICY_AMOUNT_HARD_CAP: ${POLICY_AMOUNT_HARD_CAP:-10000.0}
+    depends_on:
+      redpanda:
+        condition: service_healthy
+      llm-gateway:
+        condition: service_started
+      ml-scoring-service:
+        condition: service_started
+    networks:
+      - acip-net
+
+  merchant-agent:
+    build:
+      context: ..
+      dockerfile: services/merchant-agent/Dockerfile
+    container_name: acip-merchant-agent
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      KAFKA_BOOTSTRAP: ${KAFKA_BOOTSTRAP:-redpanda:9092}
+      LLM_GATEWAY_URL: http://llm-gateway:8000
+      ML_SCORING_URL: http://ml-scoring-service:8000
+      MERCHANT_HIGH_VALUE_CHALLENGE: ${MERCHANT_HIGH_VALUE_CHALLENGE:-4000.0}
+    depends_on:
+      redpanda:
+        condition: service_healthy
+      llm-gateway:
+        condition: service_started
+      ml-scoring-service:
+        condition: service_started
+    networks:
+      - acip-net
+
+  checkout-personalization-agent:
+    build:
+      context: ..
+      dockerfile: services/checkout-personalization-agent/Dockerfile
+    container_name: acip-checkout-personalization-agent
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      KAFKA_BOOTSTRAP: ${KAFKA_BOOTSTRAP:-redpanda:9092}
+      LLM_GATEWAY_URL: http://llm-gateway:8000
+      ML_SCORING_URL: http://ml-scoring-service:8000
+    depends_on:
+      redpanda:
+        condition: service_healthy
+      llm-gateway:
+        condition: service_started
+      ml-scoring-service:
+        condition: service_started
+    networks:
+      - acip-net
+
+  # --- Phase 3 graph-projector (docs/03): projects events into Neo4j + Postgres ---
+  graph-projector:
+    build:
+      context: ..
+      dockerfile: services/graph-projector/Dockerfile
+    container_name: acip-graph-projector
+    env_file:
+      - path: ../.env
+        required: false
+    environment:
+      KAFKA_BOOTSTRAP: ${KAFKA_BOOTSTRAP:-redpanda:9092}
+      NEO4J_URI: ${NEO4J_URI:-bolt://neo4j:7687}
+      POSTGRES_DSN: ${POSTGRES_DSN:-postgresql://acip:acip@postgres:5432/acip}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+    depends_on:
+      redpanda:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - acip-net
+
   prometheus:
     image: prom/prometheus:v2.55.1
     container_name: acip-prometheus
