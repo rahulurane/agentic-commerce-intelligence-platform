@@ -1,7 +1,8 @@
 {
   "task_id": "task-acip-phase3",
   "task_description": "ACIP Phase 3: land the three Phase-2 carryover fixes (runtime read-model bootstrap, 404-not-500 reads, async idempotency), the six evaluating agents (risk, fraud, routing, policy, merchant, checkout-personalization) as async Kafka consumers producing agent.verdict.produced, the graph-projector that owns runtime read-model/Neo4j projection, and the compose/Makefile/uv-workspace wiring plus a five-scenario demo. Everything reuses acip-common contracts; stay on feat/phase1-foundation; do not modify docs/.",
-  "status": "pending",
+  "status": "completed",
   "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003", "FEAT-004"],
-  "blocked_reason": null
+  "blocked_reason": null,
+  "findings": "COMPLETED. All four Phase-3 features landed on feat/phase1-foundation. FEAT-001 shared foundations + carryover fixes, FEAT-002 six evaluating agents, FEAT-003 graph-projector, FEAT-004 compose/Makefile/demo wiring + one-command start.sh/stop.sh. Full static gate green (ruff, black --check, mypy strict, 127 pytest, docker compose config = 22 services) and the five-scenario demo verified LIVE on Docker with NO cloud creds via a clean ./start.sh: clean_shopper->APPROVE, ring_member->DECLINE (fraud veto), high_value_midrisk->CHALLENGE (merchant step-up), sanctioned_geo->DECLINE (policy veto), unhealthy_preferred_route->APPROVE on a healthy alternate route. Details in .agents/tasks/phase3-verification.md and FEAT-004.json findings, including the two train/serve-skew fixes (representation-service shared-device ring query + seed ring materialization) needed to make the seeded scenarios resolve as documented."
 }
