@@ -466,3 +466,22 @@ services:
       - "4317:4317" # OTLP gRPC
     networks:
       - acip-net
+
+  # --- Phase 4 demo UI (docs/DEMO-WALKTHROUGH.md): React SPA over checkout-api ---
+  # Multi-stage build (node:20-alpine -> nginx:alpine) with the checkout-api base URL
+  # baked in at build time. Served on host port 8090; it only reads checkout-api over
+  # the published host port, so it needs no in-network dependency beyond start order.
+  demo-ui:
+    build:
+      context: ..
+      dockerfile: ui/Dockerfile
+      args:
+        VITE_CHECKOUT_API_URL: "http://localhost:8080"
+    container_name: acip-demo-ui
+    depends_on:
+      checkout-api:
+        condition: service_started
+    ports:
+      - "8090:80"
+    networks:
+      - acip-net

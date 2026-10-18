@@ -24,12 +24,14 @@ empty — this edge tolerates that and always returns the top-level decision fie
 from __future__ import annotations
 
 import logging
+import os
 import uuid
 from datetime import UTC, datetime
 from typing import Annotated, Any
 
 import httpx
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict
 
@@ -51,6 +53,21 @@ configure_logging()
 _log = logging.getLogger("checkout_api")
 
 app = FastAPI(title="checkout-api", version="0.1.0")
+
+# Additive CORS support for the browser-based demo UI (Phase 4). Origins come from the
+# ``CORS_ALLOW_ORIGINS`` env var (comma-separated; default ``*``). This only adds the
+# CORS response headers — it does NOT change any decision behavior or response body.
+_cors_origins = [
+    origin.strip()
+    for origin in os.environ.get("CORS_ALLOW_ORIGINS", "*").split(",")
+    if origin.strip()
+] or ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_cors_origins,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 _PRODUCER_NAME = "checkout-api"
 

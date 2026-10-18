@@ -299,3 +299,31 @@ def test_health_and_ready() -> None:
     client = TestClient(app)
     assert client.get("/healthz").json() == {"status": "ok"}
     assert client.get("/readyz").json() == {"status": "ready"}
+
+
+def test_cors_allow_origin_header_present() -> None:
+    """The additive CORSMiddleware echoes an access-control-allow-origin header.
+
+    The browser-based demo UI (Phase 4) is served from a different origin than the
+    checkout-api, so the API must emit CORS headers. A simple GET with an ``Origin``
+    header is enough to prove the middleware is wired; this does not touch any decision
+    behavior.
+    """
+    client = TestClient(app)
+    resp = client.get("/healthz", headers={"Origin": "http://localhost:8090"})
+    assert resp.status_code == 200
+    assert "access-control-allow-origin" in {k.lower() for k in resp.headers}
+
+
+def test_cors_preflight_on_checkout() -> None:
+    """An OPTIONS preflight to /v1/checkout is answered with CORS headers."""
+    client = TestClient(app)
+    resp = client.options(
+        "/v1/checkout",
+        headers={
+            "Origin": "http://localhost:8090",
+            "Access-Control-Request-Method": "POST",
+        },
+    )
+    assert resp.status_code in (200, 204)
+    assert "access-control-allow-origin" in {k.lower() for k in resp.headers}

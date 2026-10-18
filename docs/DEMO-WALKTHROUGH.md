@@ -86,6 +86,7 @@ When it finishes it prints the live URLs. Keep that output handy — you'll use 
 
 | What | URL | Login |
 |------|-----|-------|
+| Demo UI (React, start here) | <http://localhost:8090> | — |
 | Checkout API (the product) | <http://localhost:8080> | — |
 | Neo4j Browser (the graph) | <http://localhost:7474> | `neo4j` / `password` |
 | Grafana (metrics) | <http://localhost:3000> | `admin` / `admin` |
@@ -136,6 +137,26 @@ these one at a time.**
 
 OK: all 5 scenarios returned their expected decision
 ```
+
+---
+
+### Demo UI (React)
+
+Prefer a browser over the terminal? Open the **Demo UI** at
+<http://localhost:8090> (brought up by `./start.sh` as the `demo-ui` container). It is a
+thin React front end over the same `checkout-api`:
+
+- One click on a scenario button POSTs it to `/v1/checkout` and shows a prominent
+  **colored decision banner** — green APPROVE, amber CHALLENGE, red DECLINE.
+- It then polls `GET /v1/transactions/{id}` and fills in the **six agent verdict cards**
+  (risk, fraud, routing, policy, merchant, checkout-personalization), tolerating the
+  brief window where the agents are still committing.
+- A **custom checkout** form and a **recent transactions** list (with click-through to
+  re-inspect) and a **decision trace / explain** view round it out.
+
+This is the most leadership-friendly way to walk the five scenarios — the colored
+banner and the agent cards make the "six specialists in parallel" story visual. The
+terminal `make demo` below is the equivalent scripted path.
 
 ---
 

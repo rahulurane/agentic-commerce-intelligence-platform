@@ -124,6 +124,7 @@ CHECKOUT_URL="$CHECKOUT_URL" uv run python scripts/demo.py
 say "ACIP is up. Summary"
 cat <<EOF
 
+  Demo UI (React):        http://localhost:8090   (start here for the walkthrough)
   Checkout API (public):  ${CHECKOUT_URL}
     health:               ${CHECKOUT_URL}/healthz
   Neo4j Browser:          http://localhost:7474   (user neo4j / password 'password')

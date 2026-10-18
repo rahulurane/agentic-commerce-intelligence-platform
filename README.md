@@ -15,9 +15,12 @@ From the repo root, with Docker running:
 `start.sh` checks prerequisites, creates `.env` from `.env.example` if absent, trains the
 ML models on first run, builds and starts the full stack (backing infra + the 14
 application services), waits for health, seeds the demo scenarios, and runs the
-five-scenario demo. When it finishes it prints the service URLs (checkout-api on
-<http://localhost:8080>, Neo4j Browser, Grafana, Jaeger, Prometheus) and a sample
-`curl`.
+five-scenario demo. When it finishes it prints the service URLs (the React Demo UI on
+<http://localhost:8090>, checkout-api on <http://localhost:8080>, Neo4j Browser,
+Grafana, Jaeger, Prometheus) and a sample `curl`.
+
+Open the **Demo UI** at <http://localhost:8090> to run the scenarios from a browser and
+watch the six agent verdicts populate. The UI source lives in [`ui/`](ui/README.md).
 
 Tear everything down with:
 
