@@ -9,6 +9,8 @@ COMPOSE := docker compose -f deploy/docker-compose.yml
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 		| awk 'BEGIN {FS = ":.*?## "} {printf "  %-10s %s\n", $$1, $$2}'
+	@echo ""
+	@echo "  one-command local bring-up: ./start.sh   (tear down: ./stop.sh [-v])"
 
 # --- stack (docs/07 §1): infra + the 14 application services ---
 build: ## Build/pull all images (infra + the 14 services)

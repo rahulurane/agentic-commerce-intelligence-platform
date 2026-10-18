@@ -77,7 +77,12 @@ class GraphStore:
         ``degraded`` is ``True`` when the store was unreachable so the caller can fill
         defaults and label the representation degraded (docs/03 §8). The shared-device
         ring size follows the ``FROM_DEVICE`` device-sharing pattern (docs/03 §3):
-        count the distinct customers linked to the transaction's device.
+        count the distinct customers linked to the transaction's device, but report 0
+        when only a single customer uses the device. A device with one owner is NOT a
+        shared-device ring, and the fraud model was trained with
+        ``shared_device_ring_size`` meaning the shared member count (0 when the device
+        is not shared, see ``ml/training/generate_dataset.py``); counting the lone owner
+        as 1 would be train/serve skew that flags every solo customer as a ring member.
         """
         driver = self._ensure()
         if driver is None:
@@ -99,9 +104,13 @@ class GraphStore:
                     signals.customer_chargeback_count = int(customer.get("chargeback_count") or 0)
 
                 if device_fingerprint:
+                    # Count the distinct customers on the device; a lone owner (count 1)
+                    # is not a ring, so collapse it to 0 to match the trained feature
+                    # definition (0 == device not shared).
                     ring = session.run(
                         "MATCH (d:Device {id: $did})-[:LINKED_TO]->(c:Customer) "
-                        "RETURN count(DISTINCT c) AS ring_size",
+                        "WITH count(DISTINCT c) AS shared "
+                        "RETURN CASE WHEN shared > 1 THEN shared ELSE 0 END AS ring_size",
                         did=device_fingerprint,
                     ).single()
                     if ring is not None:

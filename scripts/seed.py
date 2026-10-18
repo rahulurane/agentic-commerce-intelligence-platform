@@ -152,6 +152,25 @@ def seed_neo4j(settings: Settings) -> None:
                     home_geo=scenario.home_geo,
                     device_id=scenario.device_id,
                 )
+                # Materialize a genuine shared-device ring: link ``ring_size`` distinct
+                # customers to the one device so the representation-service device-sharing
+                # traversal (count of distinct customers on the device) actually returns
+                # ``ring_size``. Without these extra members the device would have only
+                # its owner and resolve to a ring size of 0 (not shared), and the fraud
+                # ring scenario would not trip the fraud model (docs/03 §3, docs/05 §6.3).
+                if scenario.ring_size > 1:
+                    for member in range(1, scenario.ring_size):
+                        session.run(
+                            """
+                            MATCH (d:Device {id: $device_id})
+                            MERGE (rc:Customer {id: $ring_member_id})
+                              SET rc.risk_tier = 'high', rc.home_geo = $home_geo
+                            MERGE (d)-[:LINKED_TO]->(rc)
+                            """,
+                            device_id=scenario.device_id,
+                            ring_member_id=f"{scenario.customer_id}_ring_{member}",
+                            home_geo=scenario.home_geo,
+                        )
                 for method, hist in scenario.method_history.items():
                     session.run(
                         """
