@@ -93,6 +93,39 @@ When it finishes it prints the live URLs. Keep that output handy — you'll use 
 | Jaeger (request traces) | <http://localhost:16686> | — |
 | Prometheus (raw metrics) | <http://localhost:9090> | — |
 
+### Alternative: run locally (host processes)
+
+For development you can run a **local mode** instead: the open-source infra stays in
+Docker, but the 14 application services run as host `uvicorn` processes and the React UI
+runs via the Vite dev server. The all-Docker `./start.sh` above is unchanged; the two
+modes use different ports.
+
+**Prerequisite (in addition to Docker):** **Node 20** on the host (the Vite dev server
+needs it; `./start.sh` does not). `start-local.sh` checks for it and fails with an
+install hint if missing.
+
+```sh
+make up-local     # infra in Docker, 14 services as host processes, Vite UI on 5173
+make down-local   # stop host processes (leaves infra up)
+```
+
+In local mode the **Demo UI is at <http://localhost:5173>** (vs <http://localhost:8090>
+in Docker mode); `checkout-api` stays on <http://localhost:8080>. Host port map:
+
+| Service | Port | Service | Port |
+|---------|------|---------|------|
+| checkout-api | 8080 | risk-agent | 8091 |
+| commerce-orchestrator | 8081 | fraud-agent | 8092 |
+| representation-service | 8082 | routing-agent | 8093 |
+| ml-scoring-service | 8083 | policy-agent | 8094 |
+| llm-gateway | 8084 | merchant-agent | 8095 |
+| decision-engine | 8085 | checkout-personalization-agent | 8096 |
+| payment-processor-sim | 8086 | graph-projector | 8097 |
+
+View logs with `tail -f logs/*.log`. Stop with `./stop-local.sh` (add `--all` to also
+stop the Docker infra, or `-v` to also drop the data volumes). The five scenarios in §5
+below work identically — just point the browser at :5173 instead of :8090.
+
 ---
 
 ## 5. The demo — five scenarios

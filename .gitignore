@@ -19,6 +19,15 @@ dist/
 
 # Secrets — never commit
 .env
+.env.local
+
+# Local (host-process) run-mode runtime dirs
+logs/
+run/
+
+# Frontend build outputs / deps (ui/ is self-contained; package-lock.json IS committed)
+ui/node_modules/
+ui/dist/
 
 # Generated ML artifacts (keep placeholders only)
 ml/data/*

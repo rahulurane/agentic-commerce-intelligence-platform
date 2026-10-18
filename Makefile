@@ -4,13 +4,14 @@
 COMPOSE := docker compose -f deploy/docker-compose.yml
 
 .DEFAULT_GOAL := help
-.PHONY: help build up up-infra down topics train seed lint format test demo smoke logs
+.PHONY: help build up up-infra down up-local down-local topics train seed lint format test demo smoke logs
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 		| awk 'BEGIN {FS = ":.*?## "} {printf "  %-10s %s\n", $$1, $$2}'
 	@echo ""
-	@echo "  one-command local bring-up: ./start.sh   (tear down: ./stop.sh [-v])"
+	@echo "  one-command all-Docker bring-up: ./start.sh        (tear down: ./stop.sh [-v])"
+	@echo "  host-process local mode:         make up-local      (tear down: make down-local)"
 
 # --- stack (docs/07 §1): infra + the 14 application services ---
 build: ## Build/pull all images (infra + the 14 services)
@@ -24,6 +25,13 @@ up-infra: ## Start infra only (Kafka/Neo4j/Postgres/Redis/observability)
 
 down: ## Stop the stack and remove containers
 	$(COMPOSE) down
+
+# --- local (host-process) mode: infra in Docker + 14 host services + Vite UI on 5173 ---
+up-local: ## Local run mode: infra in Docker, 14 app services as host processes, Vite UI on 5173
+	./start-local.sh
+
+down-local: ## Stop local mode (host processes; leaves infra up). Args pass through: make down-local ARGS="--all"
+	./stop-local.sh $(ARGS)
 
 topics: ## Create Kafka topics (idempotent)
 	$(COMPOSE) up kafka-init
