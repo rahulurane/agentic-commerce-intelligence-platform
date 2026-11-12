@@ -26,7 +26,9 @@ export const CONTRAST_PAIRS: ContrastPair[] = [
   { name: "light challenge on tint", fg: "#8A5A00", bg: "#FFF4D6", min: 4.5 },
   { name: "light decline", fg: "#B42318", bg: "#FFFFFF", min: 4.5 },
   { name: "light decline on tint", fg: "#B42318", bg: "#FDECEA", min: 4.5 },
+  { name: "light control border", fg: "#6F8399", bg: "#FFFFFF", min: 3 },
   // Dark theme
+  { name: "dark control border", fg: "#5F7FAB", bg: "#12263F", min: 3 },
   { name: "dark primary text", fg: "#E8EEF5", bg: "#12263F", min: 4.5 },
   { name: "dark muted text", fg: "#9FB3C8", bg: "#12263F", min: 4.5 },
   { name: "dark link", fg: "#6DB7EA", bg: "#12263F", min: 4.5 },

@@ -64,7 +64,7 @@ export default function ScoreGauge({ score, veto }: Props) {
 
   return (
     <div className="gauge">
-      <svg viewBox="0 0 200 118" className="gauge__svg" role="img" aria-label={label}>
+      <svg viewBox="0 0 200 138" className="gauge__svg" role="img" aria-label={label}>
         <path d={arc(0, APPROVE_MAX)} className="gauge__band gauge__band--approve" />
         <path d={arc(APPROVE_MAX, CHALLENGE_MAX)} className="gauge__band gauge__band--challenge" />
         <path d={arc(CHALLENGE_MAX, 1)} className="gauge__band gauge__band--decline" />
@@ -72,7 +72,7 @@ export default function ScoreGauge({ score, veto }: Props) {
           <line x1={CX} y1={CY} x2={CX} y2={CY - 62} />
           <circle cx={CX} cy={CY} r="6" />
         </g>
-        <text x={CX} y="116" textAnchor="middle" className="gauge__value">
+        <text x={CX} y="132" textAnchor="middle" className="gauge__value">
           {formatScore(score)}
         </text>
       </svg>

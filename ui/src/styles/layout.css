@@ -72,7 +72,12 @@
 }
 
 @media (max-width: 900px) {
+  .app-header__title {
+    min-width: 0;
+  }
   .app-header__title h1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
   }
   .app-header__title p {

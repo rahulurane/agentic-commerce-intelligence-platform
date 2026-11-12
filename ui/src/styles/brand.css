@@ -10,6 +10,7 @@
  *  - The logo teal (#129B75) is only 3.52:1 on white, so it is used for graphics only.
  *    Teal used as TEXT is the darker #0B7A5C in light mode.
  *  - Blue and teal are lightened in dark mode so they read on the dark surfaces.
+ * The <meta name="theme-color"> in index.html repeats --brand-deep; update it on a re-skin.
  * Teal never means "success"; status colours live in tokens.css.
  */
 :root,
