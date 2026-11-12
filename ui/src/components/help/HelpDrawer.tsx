@@ -172,7 +172,7 @@ export default function HelpDrawer({ onClose, onReplayTour }: Props) {
               ))}
             </ul>
           </nav>
-          <div className="help__content">
+          <div className="help__content" tabIndex={0} role="region" aria-label="Help content">
             {HELP_SECTIONS.map((s) => (
               <section key={s.id} id={s.id} aria-labelledby={`${s.id}-h`} className="help__section">
                 <h3 id={`${s.id}-h`}>{s.title}</h3>

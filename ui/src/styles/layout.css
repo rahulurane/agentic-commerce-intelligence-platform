@@ -71,6 +71,14 @@
   }
 }
 
+@media (max-width: 900px) {
+  .app-header__title h1 {
+    white-space: nowrap;
+  }
+  .app-header__title p {
+    display: none;
+  }
+}
 @media (max-width: 600px) {
   .app-header {
     flex-wrap: wrap;

@@ -119,7 +119,8 @@ export default function AgentCard({ info, state, verdict, driver }: Props) {
             <ul>
               {evidence.map((e, i) => (
                 <li key={`${e.signal}-${i}`}>
-                  {e.signal}: {String(e.value)}
+                  {e.signal}:{" "}
+                  {typeof e.value === "number" ? Number(e.value.toFixed(4)) : String(e.value)}
                   {e.weight != null ? ` (${e.weight})` : ""}
                 </li>
               ))}
