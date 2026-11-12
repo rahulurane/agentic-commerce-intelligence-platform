@@ -20,9 +20,7 @@ describe("AgentCards", () => {
 
   it("renders a waiting state for an empty verdict list without crashing", () => {
     render(<AgentCards verdicts={[]} waiting={true} />);
-    expect(
-      screen.getByText(/waiting for agents/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/waiting for agents/i)).toBeInTheDocument();
     // The six-agent roster is still shown as pending placeholders.
     expect(screen.getByText("risk")).toBeInTheDocument();
     expect(screen.getByText("checkout_personalization")).toBeInTheDocument();

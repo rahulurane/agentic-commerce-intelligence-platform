@@ -1,0 +1,42 @@
+/*
+ * ACIP brand colours. This is the ONLY file that contains brand colours.
+ *
+ * NOTE: the hex values below are approximations taken from third-party listings.
+ * Replace them with the official Global Payments values. Editing this one file
+ * re-skins the whole UI. When swapping values, update src/styles/contrast-pairs.ts
+ * so the contrast test (WCAG AA) keeps guarding the new palette.
+ *
+ * Adjustments made for accessibility:
+ *  - The logo teal (#129B75) is only 3.52:1 on white, so it is used for graphics only.
+ *    Teal used as TEXT is the darker #0B7A5C in light mode.
+ *  - Blue and teal are lightened in dark mode so they read on the dark surfaces.
+ * Teal never means "success"; status colours live in tokens.css.
+ */
+:root,
+[data-theme="light"] {
+  --brand-deep: #003b71;
+  --brand-blue: #00639a;
+  --brand-teal: #129b75;
+  --brand-teal-text: #0b7a5c;
+  --brand-heading: #003b71;
+  --brand-link: #00639a;
+  --brand-primary-fill: #003b71;
+  --brand-primary-fill-hover: #00639a;
+  --brand-on-primary: #ffffff;
+  --brand-focus: #00639a;
+  --brand-tint: #e6f0f8;
+}
+
+[data-theme="dark"] {
+  --brand-deep: #003b71;
+  --brand-blue: #6db7ea;
+  --brand-teal: #3fc9a0;
+  --brand-teal-text: #3fc9a0;
+  --brand-heading: #e8eef5;
+  --brand-link: #6db7ea;
+  --brand-primary-fill: #6db7ea;
+  --brand-primary-fill-hover: #9accf0;
+  --brand-on-primary: #0b1726;
+  --brand-focus: #6db7ea;
+  --brand-tint: #17324f;
+}

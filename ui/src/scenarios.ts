@@ -5,6 +5,7 @@
 // idempotency_key='idem_demo_<name>'. The expected decision is shown in the UI as a hint.
 
 import type { CheckoutRequest } from "./api/types";
+import type { IconName } from "./components/ui/Icon";
 
 export interface Scenario {
   /** Stable scenario name (matches seed.py). */
@@ -15,6 +16,10 @@ export interface Scenario {
   expected: "APPROVE" | "CHALLENGE" | "DECLINE";
   /** One-line description of what the scenario demonstrates. */
   blurb: string;
+  /** Display only: icon, short story and what the scenario demonstrates. */
+  icon: IconName;
+  story: string;
+  demonstrates: string;
   customerId: string;
   amount: number;
   methodType: string;
@@ -27,6 +32,9 @@ export const SCENARIOS: Scenario[] = [
     label: "Clean shopper",
     expected: "APPROVE",
     blurb: "Normal customer with good history — low risk.",
+    icon: "user",
+    story: "A regular customer buys a small order by UPI.",
+    demonstrates: "Low risk flows straight through.",
     customerId: "cus_clean",
     amount: 120.0,
     methodType: "upi",
@@ -37,6 +45,9 @@ export const SCENARIOS: Scenario[] = [
     label: "Fraud ring member",
     expected: "DECLINE",
     blurb: "Device shared across a fraud ring — fraud veto.",
+    icon: "network",
+    story: "A card used on a device shared with a ring of accounts.",
+    demonstrates: "A fraud veto, found through the graph.",
     customerId: "cus_ring",
     amount: 90.0,
     methodType: "card",
@@ -47,6 +58,9 @@ export const SCENARIOS: Scenario[] = [
     label: "High-value mid-risk",
     expected: "CHALLENGE",
     blurb: "Large but legitimate purchase — step up for review.",
+    icon: "scale",
+    story: "A big card purchase from a customer with one past chargeback.",
+    demonstrates: "Borderline cases are stepped up, not blocked.",
     customerId: "cus_midrisk",
     amount: 4800.0,
     methodType: "card",
@@ -57,6 +71,9 @@ export const SCENARIOS: Scenario[] = [
     label: "Sanctioned geography",
     expected: "DECLINE",
     blurb: "Customer in a blocked region — policy veto.",
+    icon: "shield",
+    story: "A wallet payment from a blocked region.",
+    demonstrates: "A policy veto that no score can override.",
     customerId: "cus_sanctioned",
     amount: 200.0,
     methodType: "wallet",
@@ -67,6 +84,9 @@ export const SCENARIOS: Scenario[] = [
     label: "Unhealthy preferred route",
     expected: "APPROVE",
     blurb: "Preferred processor degraded — reroute to a healthy alternate.",
+    icon: "route",
+    story: "A good customer, but the preferred processor is struggling.",
+    demonstrates: "Smart routing with failover.",
     customerId: "cus_reroute",
     amount: 260.0,
     methodType: "card",
@@ -79,13 +99,8 @@ export const SCENARIOS: Scenario[] = [
  * idempotency_key so re-running the same scenario in a session produces a fresh
  * evaluation rather than an idempotent replay of the first result.
  */
-export function scenarioBody(
-  scenario: Scenario,
-  nonce?: string,
-): CheckoutRequest {
-  const idem = nonce
-    ? `idem_demo_${scenario.name}_${nonce}`
-    : `idem_demo_${scenario.name}`;
+export function scenarioBody(scenario: Scenario, nonce?: string): CheckoutRequest {
+  const idem = nonce ? `idem_demo_${scenario.name}_${nonce}` : `idem_demo_${scenario.name}`;
   return {
     merchant_id: "mrc_demo",
     customer_id: scenario.customerId,

@@ -66,4 +66,23 @@ describe("scenario payloads", () => {
       expect(body.currency).toBe("INR");
     }
   });
+
+  it("keeps display-only fields out of the request body", () => {
+    for (const s of SCENARIOS) {
+      const body = scenarioBody(s, "n1") as unknown as Record<string, unknown>;
+      expect(Object.keys(body).sort()).toEqual([
+        "amount",
+        "context",
+        "currency",
+        "customer_id",
+        "idempotency_key",
+        "merchant_id",
+        "payment_method",
+      ]);
+      expect(body).not.toHaveProperty("story");
+      expect(body).not.toHaveProperty("icon");
+      expect(s.story.length).toBeGreaterThan(0);
+      expect(s.demonstrates.length).toBeGreaterThan(0);
+    }
+  });
 });

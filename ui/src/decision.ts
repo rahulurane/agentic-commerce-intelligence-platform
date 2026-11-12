@@ -1,10 +1,11 @@
 // Presentation-only decision helpers. This maps a decision string to a CSS class name
-// for the banner color (APPROVE=green, CHALLENGE=amber, DECLINE=red). It does NOT make
-// or re-derive any decision — the backend is the source of truth.
-
+// for the banner color (APPROVE=green, CHALLENGE=amber, DECLINE=red), an icon and a tone.
+// It does NOT make or re-derive any decision — the backend is the source of truth.
 import type { Decision } from "./api/types";
+import type { IconName } from "./components/ui/Icon";
 
 export type DecisionColor = "approve" | "challenge" | "decline" | "unknown";
+export type DecisionTone = "success" | "warning" | "danger" | "neutral";
 
 /** Map a decision to a color class; null/unknown decisions resolve to "unknown". */
 export function decisionColor(decision: Decision | null | undefined): DecisionColor {
@@ -31,5 +32,33 @@ export function decisionLabel(decision: Decision | null | undefined): string {
       return "DECLINE";
     default:
       return "Pending";
+  }
+}
+
+/** Icon that accompanies a decision so colour is never the only signal. */
+export function decisionIcon(decision: Decision | null | undefined): IconName {
+  switch (decisionColor(decision)) {
+    case "approve":
+      return "check-circle";
+    case "challenge":
+      return "alert-triangle";
+    case "decline":
+      return "x-circle";
+    default:
+      return "info";
+  }
+}
+
+/** Semantic tone for a decision. */
+export function decisionTone(decision: Decision | null | undefined): DecisionTone {
+  switch (decisionColor(decision)) {
+    case "approve":
+      return "success";
+    case "challenge":
+      return "warning";
+    case "decline":
+      return "danger";
+    default:
+      return "neutral";
   }
 }

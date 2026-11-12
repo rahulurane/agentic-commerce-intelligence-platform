@@ -29,6 +29,21 @@ export default [
         HTMLInputElement: "readonly",
         HTMLSelectElement: "readonly",
         HTMLFormElement: "readonly",
+        HTMLElement: "readonly",
+        HTMLDivElement: "readonly",
+        HTMLButtonElement: "readonly",
+        KeyboardEvent: "readonly",
+        MouseEvent: "readonly",
+        Node: "readonly",
+        localStorage: "readonly",
+        navigator: "readonly",
+        performance: "readonly",
+        AbortController: "readonly",
+        requestAnimationFrame: "readonly",
+        cancelAnimationFrame: "readonly",
+        setInterval: "readonly",
+        clearInterval: "readonly",
+        getComputedStyle: "readonly",
       },
     },
     plugins: {
@@ -39,14 +54,8 @@ export default [
     rules: {
       ...tsPlugin.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
-      "react-refresh/only-export-components": [
-        "warn",
-        { allowConstantExport: true },
-      ],
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        { argsIgnorePattern: "^_" },
-      ],
+      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
     },
   },
 ];

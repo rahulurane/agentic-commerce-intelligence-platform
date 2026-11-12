@@ -7,14 +7,7 @@ interface Props {
 
 // The six agents ACIP runs. When the polled verdicts are empty/partial we still show
 // the roster so the room sees which specialists participate.
-const AGENT_ROSTER = [
-  "risk",
-  "fraud",
-  "routing",
-  "policy",
-  "merchant",
-  "checkout_personalization",
-];
+const AGENT_ROSTER = ["risk", "fraud", "routing", "policy", "merchant", "checkout_personalization"];
 
 function hintClass(hint: string | null): string {
   switch ((hint ?? "").toUpperCase()) {
@@ -59,9 +52,7 @@ export default function AgentCards({ verdicts, waiting }: Props) {
         {verdicts.map((v) => (
           <div key={v.agent} className={`agent-card ${hintClass(v.hint)}`}>
             <span className="agent-name">{v.agent}</span>
-            <span className="agent-score">
-              {v.score != null ? v.score.toFixed(3) : "—"}
-            </span>
+            <span className="agent-score">{v.score != null ? v.score.toFixed(3) : "—"}</span>
             <span className="agent-hint">{v.hint ?? "—"}</span>
           </div>
         ))}

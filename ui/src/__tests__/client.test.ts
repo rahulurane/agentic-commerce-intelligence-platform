@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ApiError, pollTransaction, postCheckout } from "../api/client";
+import { ApiError, getHealth, pollTransaction, postCheckout } from "../api/client";
 import type { CheckoutRequest, TransactionView } from "../api/types";
 
 const BODY: CheckoutRequest = {
@@ -28,9 +28,7 @@ describe("client", () => {
   it("postCheckout returns the decision JSON on success", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () =>
-        jsonResponse(200, { transaction_id: "txn_1", decision: "APPROVE" }),
-      ),
+      vi.fn(async () => jsonResponse(200, { transaction_id: "txn_1", decision: "APPROVE" })),
     );
     const resp = await postCheckout(BODY);
     expect(resp.transaction_id).toBe("txn_1");
@@ -38,7 +36,10 @@ describe("client", () => {
   });
 
   it("postCheckout throws ApiError when the request fails", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => jsonResponse(500, {})));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => jsonResponse(500, {})),
+    );
     await expect(postCheckout(BODY)).rejects.toBeInstanceOf(ApiError);
   });
 
@@ -77,8 +78,41 @@ describe("client", () => {
       verdicts: [],
       created_at: null,
     };
-    vi.stubGlobal("fetch", vi.fn(async () => jsonResponse(200, empty)));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => jsonResponse(200, empty)),
+    );
     const view = await pollTransaction("txn_1", 2, 0);
     expect(view?.verdicts).toHaveLength(0);
+  });
+});
+
+describe("getHealth", () => {
+  it("resolves when /healthz is ok", async () => {
+    const fetchMock = vi.fn(async () => jsonResponse(200, { status: "ok" }));
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(getHealth()).resolves.toBeUndefined();
+    expect(String((fetchMock.mock.calls[0] as unknown[])[0])).toMatch(/\/healthz$/);
+  });
+
+  it("rejects with an ApiError on a non-2xx answer", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => jsonResponse(503, {})),
+    );
+    await expect(getHealth()).rejects.toBeInstanceOf(ApiError);
+  });
+
+  it("aborts the request after the timeout", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        (_url: string, init?: RequestInit) =>
+          new Promise((_resolve, reject) => {
+            init?.signal?.addEventListener("abort", () => reject(new Error("aborted")));
+          }),
+      ),
+    );
+    await expect(getHealth(20)).rejects.toThrow("aborted");
   });
 });

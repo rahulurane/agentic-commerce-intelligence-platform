@@ -1,0 +1,92 @@
+/* Semantic design tokens built on brand.css. No brand hex values belong here. */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg-page: #f4f7fa;
+  --bg-surface: #ffffff;
+  --bg-sunken: #eaeff5;
+  --text-primary: #12263f;
+  --text-muted: #4a5d75;
+  --border: #d3dce6;
+  --border-strong: #9fb0c3;
+
+  --status-approve: #1b7a34;
+  --status-approve-bg: #e8f5ec;
+  --status-challenge: #8a5a00;
+  --status-challenge-bg: #fff4d6;
+  --status-decline: #b42318;
+  --status-decline-bg: #fdecea;
+  --status-neutral: #4a5d75;
+  --status-neutral-bg: #eaeff5;
+
+  --focus-ring: var(--brand-focus);
+
+  --shadow-1: 0 1px 2px rgb(18 38 63 / 8%), 0 1px 3px rgb(18 38 63 / 6%);
+  --shadow-2: 0 4px 12px rgb(18 38 63 / 10%), 0 2px 4px rgb(18 38 63 / 6%);
+  --shadow-3: 0 16px 40px rgb(18 38 63 / 18%), 0 4px 12px rgb(18 38 63 / 8%);
+  --overlay: rgb(11 23 38 / 45%);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-page: #0b1726;
+  --bg-surface: #12263f;
+  --bg-sunken: #0e1d31;
+  --text-primary: #e8eef5;
+  --text-muted: #9fb3c8;
+  --border: #27415f;
+  --border-strong: #46628a;
+
+  --status-approve: #4ade80;
+  --status-approve-bg: #12301f;
+  --status-challenge: #fbbf24;
+  --status-challenge-bg: #33260a;
+  --status-decline: #f87171;
+  --status-decline-bg: #3a1512;
+  --status-neutral: #9fb3c8;
+  --status-neutral-bg: #0e1d31;
+
+  --shadow-1: 0 0 0 1px rgb(0 0 0 / 30%);
+  --shadow-2: 0 0 0 1px rgb(0 0 0 / 40%), 0 6px 16px rgb(0 0 0 / 35%);
+  --shadow-3: 0 0 0 1px rgb(0 0 0 / 50%), 0 20px 48px rgb(0 0 0 / 55%);
+  --overlay: rgb(0 0 0 / 60%);
+}
+
+:root {
+  --font-sans: Inter, "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1rem;
+  --text-md: 1.125rem;
+  --text-lg: 1.375rem;
+  --text-xl: 1.75rem;
+  --text-2xl: 2.25rem;
+  --text-3xl: 3rem;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+
+  --radius-1: 6px;
+  --radius-2: 10px;
+  --radius-3: 16px;
+  --radius-pill: 999px;
+
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-1: 120ms;
+  --dur-2: 240ms;
+  --dur-3: 450ms;
+
+  --header-height: 4rem;
+}

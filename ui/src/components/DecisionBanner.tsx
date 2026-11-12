@@ -13,9 +13,7 @@ export default function DecisionBanner({ decision }: Props) {
       <div className="decision-headline">
         <span className="decision-word">{decisionLabel(decision.decision)}</span>
         {decision.composite_score != null && (
-          <span className="decision-score">
-            score {decision.composite_score.toFixed(3)}
-          </span>
+          <span className="decision-score">score {decision.composite_score.toFixed(3)}</span>
         )}
       </div>
       <dl className="decision-details">
@@ -46,13 +44,11 @@ export default function DecisionBanner({ decision }: Props) {
           </div>
         )}
       </dl>
-      {decision.explanation && (
-        <p className="decision-explanation">{decision.explanation}</p>
-      )}
+      {decision.explanation && <p className="decision-explanation">{decision.explanation}</p>}
       {decision.partial && (
         <p className="muted">
-          Decision returned before all agents committed (partial) — verdicts shown
-          below are polled from the transaction record.
+          Decision returned before all agents committed (partial) — verdicts shown below are polled
+          from the transaction record.
         </p>
       )}
     </section>

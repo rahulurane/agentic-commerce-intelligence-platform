@@ -10,6 +10,12 @@ export interface AgentVerdict {
   agent: string;
   score: number | null;
   hint: string | null;
+  // Optional fields supplied by newer checkout-api versions. Older APIs omit them.
+  rationale?: string | null;
+  confidence?: number | null;
+  degraded?: boolean | null;
+  model_version?: string | null;
+  evidence?: { signal: string; value: unknown; weight?: number | null }[] | null;
 }
 
 /** POST /v1/checkout response body. `verdicts` is ALWAYS empty here — poll the GET. */

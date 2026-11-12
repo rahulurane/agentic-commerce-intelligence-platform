@@ -23,9 +23,7 @@ describe("App", () => {
     await user.click(buttons[0]);
 
     await waitFor(() => {
-      expect(screen.getByRole("alert")).toHaveTextContent(
-        /could not reach checkout-api/i,
-      );
+      expect(screen.getByRole("alert")).toHaveTextContent(/could not reach checkout-api/i);
     });
   });
 
@@ -84,5 +82,36 @@ describe("App", () => {
     await waitFor(() => {
       expect(screen.getByText("risk")).toBeInTheDocument();
     });
+  });
+
+  it("shows the empty state and a connected pill on load", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          ({
+            ok: true,
+            status: 200,
+            statusText: "OK",
+            json: async () => ({ status: "ok" }),
+          }) as Response,
+      ),
+    );
+    render(<App />);
+    expect(screen.getByText("Start here")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Decision Intelligence" })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText("Connected")).toBeInTheDocument());
+  });
+
+  it("shows an unreachable pill with Retry when /healthz fails", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new TypeError("Failed to fetch");
+      }),
+    );
+    render(<App />);
+    await waitFor(() => expect(screen.getByText("Cannot reach checkout-api")).toBeInTheDocument());
+    expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument();
   });
 });

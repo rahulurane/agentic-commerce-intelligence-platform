@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decisionColor, decisionLabel } from "../decision";
+import { decisionColor, decisionIcon, decisionLabel, decisionTone } from "../decision";
 
 describe("decisionColor", () => {
   it("maps APPROVE to green (approve)", () => {
@@ -29,5 +29,18 @@ describe("decisionLabel", () => {
   it("falls back to Pending for unknown", () => {
     expect(decisionLabel(null)).toBe("Pending");
     expect(decisionLabel("APPROVE")).toBe("APPROVE");
+  });
+});
+
+describe("decisionIcon / decisionTone", () => {
+  it("pairs every decision with an icon and a tone so colour is never the only signal", () => {
+    expect(decisionIcon("APPROVE")).toBe("check-circle");
+    expect(decisionIcon("CHALLENGE")).toBe("alert-triangle");
+    expect(decisionIcon("DECLINE")).toBe("x-circle");
+    expect(decisionIcon("nope")).toBe("info");
+    expect(decisionTone("APPROVE")).toBe("success");
+    expect(decisionTone("CHALLENGE")).toBe("warning");
+    expect(decisionTone("DECLINE")).toBe("danger");
+    expect(decisionTone(null)).toBe("neutral");
   });
 });

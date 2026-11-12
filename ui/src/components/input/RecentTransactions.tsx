@@ -1,5 +1,5 @@
-import type { CheckoutResponse } from "../api/types";
-import { decisionColor } from "../decision";
+import type { CheckoutResponse } from "../../api/types";
+import StatusBadge from "../ui/StatusBadge";
 
 export interface RecentEntry {
   transactionId: string;
@@ -14,29 +14,26 @@ interface Props {
 }
 
 /** Session list of recent transactions with click-through to re-inspect one. */
-export default function RecentTransactions({
-  entries,
-  activeId,
-  onSelect,
-}: Props) {
+export default function RecentTransactions({ entries, activeId, onSelect }: Props) {
   if (entries.length === 0) {
     return null;
   }
   return (
-    <section className="recent">
-      <h2>Recent (this session)</h2>
+    <section className="card recent" aria-labelledby="recent-title">
+      <div className="card__head">
+        <h2 id="recent-title">Recent transactions</h2>
+      </div>
       <ul className="recent-list">
         {entries.map((e) => (
           <li key={e.transactionId}>
             <button
               type="button"
-              className={`recent-item ${decisionColor(e.decision)} ${
-                e.transactionId === activeId ? "active" : ""
-              }`}
+              className={`recent-item ${e.transactionId === activeId ? "active" : ""}`}
+              aria-current={e.transactionId === activeId ? "true" : undefined}
               onClick={() => onSelect(e.transactionId)}
             >
               <span className="recent-label">{e.label}</span>
-              <span className="recent-decision">{e.decision ?? "—"}</span>
+              <StatusBadge decision={e.decision} />
               <code className="recent-id">{e.transactionId}</code>
             </button>
           </li>
