@@ -89,9 +89,11 @@ When it finishes it prints the live URLs. Keep that output handy — you'll use 
 | Demo UI (React, start here) | <http://localhost:8090> | — |
 | Checkout API (the product) | <http://localhost:8080> | — |
 | Neo4j Browser (the graph) | <http://localhost:7474> | `neo4j` / `password` |
-| Grafana (metrics) | <http://localhost:3000> | `admin` / `admin` |
 | Jaeger (request traces) | <http://localhost:16686> | — |
-| Prometheus (raw metrics) | <http://localhost:9090> | — |
+
+> **Show the Demo UI and the Neo4j graph.** Grafana (:3000) and Prometheus (:9090) also
+> start with the stack, but the services do not export metrics yet, so they have no
+> dashboards or data. Leave them out of the demo.
 
 ### Alternative: run locally (host processes)
 
@@ -296,7 +298,9 @@ Stop everything when done:
 
 **Natural next steps:**
 - Point the ML models at real (anonymized) transaction data.
-- Wire live Grafana dashboards per agent (latency, decision mix).
+- Add service metrics (a shared `/metrics` endpoint) and Grafana dashboards per agent
+  (latency, decision mix, LLM provider usage). Prometheus and Grafana already run in the
+  stack but are not yet fed by the services.
 - Deploy the same images to Kubernetes (the layout is already K8s-ready).
 
 ---
