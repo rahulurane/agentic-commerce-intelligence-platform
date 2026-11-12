@@ -1,0 +1,25 @@
+{
+  "id": "FEAT-001",
+  "type": "feat",
+  "description": "Backend (independent of UI work, do first): persist and expose per-agent rationale/evidence additively. Plan section 8 'Backend' and decision D1.",
+  "status": "completed",
+  "steps": [
+    "bootstrap.py: add ALTER TABLE agent_verdicts ADD COLUMN IF NOT EXISTS rationale TEXT, confidence NUMERIC, degraded BOOLEAN, model_version TEXT, evidence JSONB to _SCHEMA_STATEMENTS; update docstring",
+    "scripts/seed.py (~line 230): mirror columns in its DDL so seed and bootstrap agree",
+    "postgres_projector.py::_apply_verdict: write the new columns (json.dumps evidence), appending params AFTER the existing four so the fake cursor in tests/test_projector.py still works",
+    "reads.py: select new columns; on psycopg.errors.UndefinedColumn retry the legacy 4-column query; _verdicts_list adds rationale/confidence/degraded/model_version/evidence (None/[] when absent); update docstring",
+    "Tests: projector persists new fields and replay stays idempotent; checkout-api GET and /explain return the optional keys and still serialise legacy rows",
+    "docs/06-api-contracts.md: document the optional per-verdict fields"
+  ],
+  "acceptance_criteria": [
+    "Existing response keys unchanged; new keys are optional and additive",
+    "uv run pytest libs/acip-common services/checkout-api services/graph-projector -q passes",
+    "uv run ruff check libs/acip-common ml scripts is clean"
+  ],
+  "verification": [
+    "uv run pytest libs/acip-common services/checkout-api services/graph-projector -q",
+    "uv run ruff check libs/acip-common ml scripts"
+  ],
+  "blocked_reason": null,
+  "findings": "Done. Each verdict in GET /v1/transactions/{id} and /explain now has optional rationale (str|null), confidence (number|null), degraded (bool|null), model_version (str|null), evidence ([] when absent; items {signal,value,weight}) next to agent/score/hint. Legacy tables fall back to the 4-column query on UndefinedColumn. bootstrap.py issues 5 ALTER statements (total statements now 9); seed.py DDL has the same ALTERs. Seeded rows (scripts/seed.py inserts no agent_verdicts) and rows written before the upgrade return nulls, so the UI must treat all five as optional. Existing stacks need graph-projector/orchestrator restart (bootstrap runs there) and a fresh checkout to see rationale. Pre-existing: ruff format --check flags services/graph-projector/tests/test_projector.py (not caused by this change). pytest 54 passed; ruff check clean."
+}

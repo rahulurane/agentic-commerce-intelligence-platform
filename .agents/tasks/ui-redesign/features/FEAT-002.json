@@ -1,0 +1,31 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "UI foundation: brand/semantic tokens, theme, brand slot, icons, primitives, thresholds module, domain modules (agents, why), API client additions, lint/format scripts, shell + scenario launcher + form + recents restyle, useCheckoutRun hook. Plan sections 3, 4, 5.1, 5.3-5.5, 5.8, 7, 8. Old result view may stay temporarily so the build is green.",
+  "status": "completed",
+  "steps": [
+    "Create src/styles/{brand,tokens,base,layout,components}.css and contrast-pairs.ts exactly per plan 3.1-3.3 (brand.css header: approximate hex values, swap for official, single-file re-skin; light default, dark via [data-theme=dark]); remove styles.css import from main.tsx",
+    "index.html inline script sets data-theme from localStorage acip.theme (default light, ignore prefers-color-scheme); ThemeProvider + ThemeToggle; lib/storage.ts try/catch wrapper",
+    "assets/brand/README.md, brand/logo.ts (import.meta.glob logo.{svg,png}), BrandMark with optional logoUrl prop; text wordmark ACIP + 'Global Payments' co-brand fallback",
+    "components/ui: Icon set, InfoTip, StatusBadge, ScoreBar, CopyButton, Disclosure; lib/{clipboard,format,useFocusTrap,useReducedMotion}.ts",
+    "config/thresholds.ts (single constants module, commented as default mirror); domain/agents.ts; domain/why.ts per plan 5.3; content/{tooltips}.ts; decision.ts extended with icon/tone",
+    "api/types.ts optional verdict fields (rationale, confidence, degraded, model_version, evidence); api/client.ts getHealth() with 3s AbortController timeout, keep existing exports",
+    "ConnectionStatus (healthz on mount + every 15s when visible), AppHeader, ScenarioLauncher/ScenarioCard (scenarios.ts additive display fields only; scenarioBody payload unchanged), CheckoutForm validation + InfoTips, RecentTransactions restyle, EmptyState",
+    "state/useCheckoutRun.ts reducer hook (phases per plan 6, performance.now round trip); App.tsx composes layout per plan 2",
+    "eslint.config.js globals; package.json scripts format/format:check/typecheck only (no dependency changes, package-lock untouched); vitest.setup.ts clears localStorage, presets acip.tour.done=1, stubs matchMedia/scrollIntoView; run prettier --write",
+    "Tests: decision, why (all kinds + free-form + explanation-only), Theme, BrandMark, scenarios (payload equals demo.py), InfoTip, contrast, client getHealth, App smoke; update existing tests"
+  ],
+  "acceptance_criteria": [
+    "Light theme is default; toggle persists; prefers-color-scheme ignored",
+    "All brand colours exist only in brand.css",
+    "why() classifies every outcome kind from response data only, including a free-form checkout",
+    "Scenario payloads identical to scripts/demo.py",
+    "npm run lint, format:check, typecheck, test, build all pass and package-lock.json is unchanged"
+  ],
+  "verification": [
+    "cd ui && npm run lint && npm run format:check && npm run typecheck && npm test && npm run build",
+    "git diff --stat ui/package-lock.json shows no change"
+  ],
+  "blocked_reason": null,
+  "findings": "Done. Lint, format:check, typecheck, test (79 pass), build all green; package-lock.json unchanged. Notes for later steps: (1) typecheck script is `tsc -p tsconfig.json --noEmit` because `tsc -b --noEmit` errors (TS6310, composite tsconfig.node.json). (2) .prettierignore added (dist, package-lock.json, tsbuildinfo, vite.config.js/.d.ts). (3) Components were moved: CheckoutForm/RecentTransactions now in components/input/; ScenarioButtons and styles.css deleted. Old DecisionBanner, AgentCards, ExplainView remain unchanged (old tests still pass) and are composed in App.tsx; FEAT-003 replaces them. Their CSS classes (.decision-banner, .agent-card, .explain-*) are styled in components.css and can be removed then. (4) why() (domain/why.ts) takes {decision, explanation, compositeScore, route, routeAlternatives, verdicts} and is NOT yet rendered anywhere. AGENTS/agentInfo in domain/agents.ts; TOOLTIPS in content/tooltips.ts (stages/help/glossary/tour content modules not created yet). (5) useCheckoutRun (state/useCheckoutRun.ts) exposes {state, runCheckout(req,label,key?), selectRecent, loadExplain, setReplayIndex}; phases per plan 6; state has request, response, transaction, explain, roundTripMs, replayIndex, notFound, loadingHistory, recent, lastByKey, runningKey. No replay timer yet (FEAT-003). Header has no Tour/Help buttons yet (FEAT-004); EmptyState takes optional onStartTour/onOpenHelp. (6) UI primitives: Icon (IconName type), InfoTip(term,text), StatusBadge(decision,prefix), ScoreBar(label,value,tick), CopyButton(text,what), Disclosure(title). ThemeProvider wraps App in main.tsx; ThemeContext has a safe default so tests need no provider. (7) vitest.setup.ts presets acip.tour.done=1 and stubs matchMedia/scrollIntoView each test. InfoTip click opens only (hover/focus already open it), Esc/blur close."
+}

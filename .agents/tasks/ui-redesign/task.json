@@ -1,0 +1,12 @@
+{
+  "task_id": "task-ui-redesign",
+  "task_description": "Redesign the ACIP React demo UI to a Global-Payments-branded, light-default, leadership-demo-grade interface with a step-by-step Decision Journey, agent cards, help drawer/tour/tooltips, tests and visual verification. Full design: /Users/rahulurane/Documents/git_repo/agentic-commerce-intelligence-platform/.agents/tasks/ui-redesign-plan.md",
+  "status": "pending",
+  "feature_order": [
+    "FEAT-001",
+    "FEAT-002",
+    "FEAT-003",
+    "FEAT-004"
+  ],
+  "blocked_reason": null
+}

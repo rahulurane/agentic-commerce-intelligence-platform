@@ -1,0 +1,27 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Decision Journey, Outcome banner + animated gauge, Why panel, six agent cards, trace view; honest evaluating state and labelled replay; remove superseded components. Depends on FEAT-002. Plan sections 5.2-5.4, 6, 7.",
+  "status": "completed",
+  "steps": [
+    "domain/journey.ts: pure builder from run state to six stage models (status, summary, 'what happened' lines from real data, how-it-works text from content/stages.ts per plan 5.2); no timings except roundTripMs",
+    "DecisionJourney/JourneyStage (accessible disclosure, aria-expanded/controls, aria-busy while evaluating, Expand/Collapse all, ReplayNotice with 'Show all now', replay sequence respecting useReducedMotion), Jaeger link via VITE_JAEGER_URL default http://localhost:16686 + copy trace id",
+    "OutcomeBanner + ScoreGauge (SVG semicircle with default band thresholds from thresholds.ts, animated sweep, hidden with 'Scoring skipped' on veto, text alternative), WhyPanel (headline, body, engine explanation verbatim, factors, drivers)",
+    "AgentCards/AgentCard states waiting/received/degraded/missing/idle, badges (VETO: policy, fraud; ADVISORY: routing, merchant, personalization), driver ribbon, rationale/evidence/confidence only when API supplies them, general description always labelled; embed in Stage 3",
+    "TraceView (structured dl, verdict table, raw JSON disclosure, copy ids); history-selected state per plan 6; aria-live announcements",
+    "Delete DecisionBanner.tsx, ScenarioButtons.tsx if still present, old result markup in App.tsx; rewrite AgentCards/DecisionBanner tests as AgentCards/OutcomeBanner tests; add journey, ScoreGauge, App state tests (evaluating while POST pending, partial, empty verdicts, error alert text includes 'could not reach checkout-api')",
+    "npm run format; fix lint"
+  ],
+  "acceptance_criteria": [
+    "Journey shows all six stages with real data for APPROVE, CHALLENGE, DECLINE and partial/empty/error states",
+    "Evaluating state is indeterminate and replay is labelled as a replay",
+    "Only timing displayed is the measured round trip",
+    "Agent cards show only API-provided fields (+ labelled general descriptions)",
+    "Full UI command set passes"
+  ],
+  "verification": [
+    "cd ui && npm run lint && npm run format:check && npm run typecheck && npm test && npm run build"
+  ],
+  "blocked_reason": null,
+  "findings": "Done. lint, format:check, typecheck, test (109 pass), build all green; package-lock unchanged. For FEAT-004: (1) New files: domain/journey.ts (buildJourney, deriveResult -> RunResult incl. why + veto, isReplaying, REPLAY_STEP_MS=450), content/stages.ts, components/journey/{DecisionJourney,JourneyStage,ReplayNotice,OutcomeBanner,ScoreGauge,WhyPanel,TraceView}.tsx, components/agents/{AgentCards,AgentCard}.tsx. Deleted DecisionBanner, old AgentCards, ExplainView and their tests. (2) data-tour anchors already present: journey (DecisionJourney section), agents (wrapper inside stage 3), outcome (OutcomeBanner, incl. loading skeleton). brand/launcher/help anchors are still FEAT-004's. Note outcome anchor does not exist while idle. (3) useCheckoutRun gained refetchVerdicts(transactionId) for the 'Retry fetch' button. why.ts exports isVetoKind. vite-env.d.ts declares VITE_JAEGER_URL (default http://localhost:16686, used for the Open Jaeger link in stage 6). (4) Replay is driven by an effect in DecisionJourney (first stage at 0 ms then 450 ms steps, instant under reduced motion); 'Show all now' sets replayIndex to 6. Stage bodies are only expandable once revealed; stage 3 and 4 open when settled; idle/evaluating open stage 3 (cards visible). In tests, the replay notice has a 'Show all now' button until ~2.3 s after a run. (5) App has an sr-only role=status live region announcing Evaluating / Decision / Verdicts received. EmptyState is still rendered without onStartTour/onOpenHelp props (FEAT-004 should pass them). (6) Old CSS for .decision-banner/.agent-card legacy was replaced in components.css by outcome/gauge/why/stage/agent-card/trace styles; classes: .outcome--{approve|challenge|decline|unknown}, .stage--{status}, .agent-card--{state}, .notice. Visual check (section 10) not yet done."
+}

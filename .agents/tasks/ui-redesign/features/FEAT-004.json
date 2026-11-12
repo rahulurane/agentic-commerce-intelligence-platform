@@ -1,0 +1,25 @@
+{
+  "id": "FEAT-004",
+  "type": "feat",
+  "description": "Help system and docs: lazy HelpDrawer, GuidedTour, contextual InfoTips on every key term, empty-state wiring, '?' shortcut, ui/README. Depends on FEAT-003 (tour anchors). Plan sections 5.1, 5.5-5.7, 7.",
+  "status": "completed",
+  "steps": [
+    "content/{help,glossary,tour}.ts with the verbatim copy from plan 5.6 and 5.7",
+    "HelpDrawer (React.lazy + Suspense): role=dialog aria-modal, labelled, side nav with aria-current, focus trap via useFocusTrap, Esc/backdrop/close button, focus returns to trigger, app root inert while open; HelpButton with visible '?' hint; global '?' key handler ignoring inputs/modifiers",
+    "GuidedTour hand-rolled coachmarks anchored by data-tour attrs (brand, launcher, journey, agents, outcome, help) with spotlight, Step n of 6, Back/Next/Skip, Esc, auto-start ~600ms when acip.tour.done unset, completion/skip persisted, replay from Help and header Tour button; fall back to centred popover when a target is missing",
+    "Wire InfoTips next to every key term (shared representation, composite score, veto, challenge, route, failover, idempotency key, trace ID, event log, degraded, advisory, round trip, thresholds)",
+    "Tests: HelpDrawer open/close via button, ? and Esc with focus management and trap; GuidedTour start/skip/complete/persist/replay; InfoTip keyboard; empty state buttons",
+    "ui/README.md: design system, brand.css re-skin, logo slot path ui/src/assets/brand/logo.svg, theme, thresholds module, help/tour, VITE_CHECKOUT_API_URL and VITE_JAEGER_URL, test/lint commands; keep existing Docker/local-mode text accurate"
+  ],
+  "acceptance_criteria": [
+    "Help opens via button and '?' and closes via Esc with focus restored",
+    "Tour runs 6 steps, can be skipped, is replayable and remembers completion",
+    "build output contains a separate chunk for the help drawer",
+    "Full UI command set passes"
+  ],
+  "verification": [
+    "cd ui && npm run lint && npm run format:check && npm run typecheck && npm test && npm run build"
+  ],
+  "blocked_reason": null,
+  "findings": "Done. lint, format:check, typecheck, test (116 pass), build all green; package-lock unchanged; build emits separate HelpDrawer-*.js chunk (8 kB). New: components/help/{HelpDrawer,HelpButton,GuidedTour}.tsx, lib/useHelpShortcut.ts, content/{help,glossary,tour}.ts, __tests__/Help.test.tsx. App owns helpOpen/tourOpen; app root (.app) gets inert+aria-hidden while help is open; drawer is a sibling of .app; focus returns to the trigger via App triggerRef. Close button is first in DOM (initial focus) but displayed last via CSS order. Tour auto-starts after 600ms when acip.tour.done unset, Esc/Skip/Done persist it; target missing -> centred popover (e.g. outcome anchor while idle). Header has Tour + Help buttons; EmptyState now gets onStartTour/onOpenHelp. InfoTips added to ScoreGauge (composite score, approve/challenge limits, veto); others already existed. Help drawer section active state updates on nav click only (no scroll spy). Visual check (section 10) not yet done; tour spotlight/popover positioning is untested in a real browser. README updated.\n\nIntegration iteration 1: backend 128 passed, ruff clean; UI lint/format/typecheck/116 tests/build green. Live-stack Playwright shots (1440 and 768, light+dark) reviewed; axe on empty/approve/fraud-veto/help: only violation was scrollable-region-focusable on .help__content, fixed; re-run 0 serious/critical. Rounded evidence floats to 4dp; tablet header title no longer wraps. docker build -f ui/Dockerfile succeeded."
+}
