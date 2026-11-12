@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { APPROVE_MAX, CHALLENGE_MAX } from "../../config/thresholds";
 import { formatScore } from "../../lib/format";
+import { TOOLTIPS } from "../../content/tooltips";
+import InfoTip from "../ui/InfoTip";
 
 interface Props {
   /** Real composite score (0-1), or null when none was returned. */
@@ -37,7 +39,9 @@ export default function ScoreGauge({ score, veto }: Props) {
   if (veto) {
     return (
       <div className="gauge gauge--skipped">
-        <p className="gauge__skipped-title">Scoring skipped</p>
+        <p className="gauge__skipped-title">
+          Scoring skipped <InfoTip term="veto" text={TOOLTIPS.veto} />
+        </p>
         <p className="gauge__skipped-text">
           A veto ended the evaluation before a composite score was needed.
         </p>
@@ -73,8 +77,10 @@ export default function ScoreGauge({ score, veto }: Props) {
         </text>
       </svg>
       <p className="gauge__legend">
-        Default bands: up to {APPROVE_MAX} approve, up to {CHALLENGE_MAX.toFixed(2)} challenge,
-        above that decline.
+        Composite score <InfoTip term="composite score" text={TOOLTIPS.compositeScore} />.{" "}
+        <InfoTip term="approve limit" text={TOOLTIPS.approveLimit} />
+        <InfoTip term="challenge limit" text={TOOLTIPS.challengeLimit} /> Default bands: up to{" "}
+        {APPROVE_MAX} approve, up to {CHALLENGE_MAX.toFixed(2)} challenge, above that decline.
       </p>
     </div>
   );

@@ -23,7 +23,9 @@ npm run dev     # Vite dev server on http://localhost:5173
 npm run build   # tsc -b && vite build -> ui/dist
 npm run preview # serve the built bundle locally
 npm run lint    # eslint .
-npm run test    # vitest run
+npm run format:check # prettier --check
+npm run typecheck    # tsc --noEmit
+npm run test    # vitest run (single run)
 ```
 
 ## Backend URL configuration
@@ -47,3 +49,28 @@ VITE_CHECKOUT_API_URL=http://localhost:8080 npm run dev
 - **Docker mode:** served by nginx at <http://localhost:8090> (the `demo-ui` compose
   service).
 - **Local mode:** the Vite dev server at <http://localhost:5173>.
+
+## Design system and branding
+
+- Styles live in `src/styles/`: `brand.css` (the only file with brand colours),
+  `tokens.css` (semantic tokens, light and dark), `base.css`, `layout.css`,
+  `components.css`. To re-skin the UI, edit the variables in `brand.css`.
+- Logo slot: drop the official logo at `ui/src/assets/brand/logo.svg`. Until it exists
+  the header shows a text wordmark (see `src/assets/brand/README.md`).
+- Theme: light by default, with a dark toggle stored in `localStorage` (`acip.theme`).
+- Decision thresholds shown in the UI live only in `src/config/thresholds.ts`. They are
+  labelled as defaults and are never used to compute a decision (the backend decides).
+
+## Help and tour
+
+- Help guide: the `Help` header button or the `?` key (ignored while typing in a form
+  field). `HelpDrawer` is loaded with `React.lazy`, so it builds into its own chunk.
+  Copy is in `src/content/{help,glossary,tooltips,tour,stages}.ts`.
+- Guided tour: six steps anchored by `data-tour` attributes, shown once on first load
+  (`acip.tour.done` in `localStorage`). Replay it from the header `Tour` button, the
+  empty state or the Help guide.
+
+## Configuration
+
+- `VITE_CHECKOUT_API_URL`: checkout-api base URL (default `http://localhost:8080`).
+- `VITE_JAEGER_URL`: target of the "Open Jaeger" link (default `http://localhost:16686`).
