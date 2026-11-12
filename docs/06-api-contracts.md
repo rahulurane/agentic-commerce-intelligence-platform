@@ -55,6 +55,19 @@ Response (async mode): `202 Accepted` + `{ "transaction_id": "...", "status_url"
 
 Returns current state + decision + per-agent verdicts (from Postgres read models).
 
+Each entry in `verdicts` (here and in `/explain`) always has `agent`, `score`, `hint`.
+It may also carry these optional, additive fields, populated from the
+`agent.verdict.produced` event; they are `null` (`evidence`: `[]`) for rows written before
+the columns existed:
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `rationale` | string \| null | Agent's human-readable reason |
+| `confidence` | number \| null | Agent confidence, 0..1 |
+| `degraded` | boolean \| null | Agent answered in degraded mode |
+| `model_version` | string \| null | Model/rule version that produced the verdict |
+| `evidence` | array | `{signal, value, weight}` explainability signals |
+
 ### GET `/v1/transactions/{id}/explain`
 
 Returns the full decision trace: inputs, each agent's rationale + evidence, strategy,

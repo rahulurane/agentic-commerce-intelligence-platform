@@ -6,7 +6,9 @@ tables (shapes defined in ``scripts/seed.py`` and written by the orchestrator's
 
 * ``transactions(id, customer_id, amount, status, decision, created_at)``
 * ``decisions(transaction_id, decision, composite_score, strategy)``
-* ``agent_verdicts(transaction_id, agent, score, decision_hint)``
+* ``agent_verdicts(transaction_id, agent, score, decision_hint)`` plus the optional
+  additive columns ``rationale, confidence, degraded, model_version, evidence`` (a legacy
+  table without them is read with the original 4-column query)
 
 :func:`read_transaction` composes the ``GET /v1/transactions/{id}`` view (current state +
 decision + per-agent verdicts); :func:`read_explain` composes the richer
@@ -22,6 +24,7 @@ silently-degraded success.
 
 from __future__ import annotations
 
+import json
 import logging
 from typing import Any, Protocol
 
@@ -49,6 +52,27 @@ class PostgresReadModel:
     def _fetch(self, transaction_id: str) -> tuple[Any, Any, list[Any]] | None:
         """Load the (transaction, decision, verdicts) rows for ``transaction_id``.
 
+        Selects the additive explainability columns (``rationale``, ``confidence``,
+        ``degraded``, ``model_version``, ``evidence``). If the table predates them
+        (``psycopg.errors.UndefinedColumn``) the legacy 4-column query is retried so an
+        un-migrated database keeps serving the original response shape.
+        """
+        import psycopg
+
+        try:
+            return self._fetch_rows(transaction_id, extended=True)
+        except psycopg.errors.UndefinedColumn:
+            _log.info(
+                "agent_verdicts lacks explainability columns; using legacy query",
+                extra={"transaction_id": transaction_id},
+            )
+            return self._fetch_rows(transaction_id, extended=False)
+
+    def _fetch_rows(
+        self, transaction_id: str, *, extended: bool
+    ) -> tuple[Any, Any, list[Any]] | None:
+        """Run the read queries once (``extended`` selects the additive verdict columns).
+
         Returns ``None`` when the id is unknown OR when a read-model table does not yet
         exist (``psycopg.errors.UndefinedTable``) — a never-seeded stack is a 404, not a
         500 (docs/06 §1). A genuine connection/operational error still raises so the
@@ -57,6 +81,12 @@ class PostgresReadModel:
         import psycopg
         from psycopg.rows import dict_row
 
+        verdict_columns = (
+            "agent, score, decision_hint, rationale, confidence, degraded, "
+            "model_version, evidence"
+            if extended
+            else "agent, score, decision_hint"
+        )
         try:
             with psycopg.connect(self._dsn, connect_timeout=5, row_factory=dict_row) as conn:
                 with conn.cursor() as cur:
@@ -75,7 +105,7 @@ class PostgresReadModel:
                     )
                     decision = cur.fetchone()
                     cur.execute(
-                        "SELECT agent, score, decision_hint "
+                        f"SELECT {verdict_columns} "  # noqa: S608 - fixed literal column lists
                         "FROM agent_verdicts WHERE transaction_id = %s ORDER BY agent",
                         (transaction_id,),
                     )
@@ -112,9 +142,25 @@ def _verdicts_list(verdicts: list[Any]) -> list[dict[str, Any]]:
             "agent": row["agent"],
             "score": float(row["score"]) if row["score"] is not None else None,
             "hint": row["decision_hint"],
+            # Optional, additive explainability fields (None / [] for legacy rows).
+            "rationale": row.get("rationale"),
+            "confidence": (float(row["confidence"]) if row.get("confidence") is not None else None),
+            "degraded": row.get("degraded"),
+            "model_version": row.get("model_version"),
+            "evidence": _evidence_list(row.get("evidence")),
         }
         for row in verdicts
     ]
+
+
+def _evidence_list(raw: Any) -> list[Any]:
+    """Return the JSONB ``evidence`` as a list (``[]`` when absent or unparseable)."""
+    if isinstance(raw, str):
+        try:
+            raw = json.loads(raw)
+        except ValueError:
+            return []
+    return raw if isinstance(raw, list) else []
 
 
 def _transaction_view(

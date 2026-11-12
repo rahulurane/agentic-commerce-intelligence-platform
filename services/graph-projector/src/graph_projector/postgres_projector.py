@@ -7,6 +7,8 @@ mirrored by ``acip_common.bootstrap.ensure_read_model_schema`` (docs/03 §4):
 * ``transactions(id PK, customer_id, amount, status, decision, created_at)``
 * ``decisions(transaction_id PK, decision, composite_score, strategy)``
 * ``agent_verdicts(transaction_id, agent, score, decision_hint, PK(transaction_id, agent))``
+  plus the additive nullable columns ``rationale, confidence, degraded, model_version,
+  evidence (JSONB)``
 * ``event_journal(event_id PK, transaction_id, event_type, occurred_at)``
 
 Every envelope writes one ``event_journal`` row keyed by ``event_id`` with
@@ -23,6 +25,7 @@ The ``psycopg`` import is lazy so importing this module needs no running Postgre
 
 from __future__ import annotations
 
+import json
 import logging
 from typing import Any
 
@@ -157,15 +160,24 @@ class PostgresProjector:
         """AGENT_VERDICT_PRODUCED -> upsert the per-agent ``agent_verdicts`` row."""
         payload = AgentVerdictProducedPayload.model_validate(envelope.payload)
         cur.execute(
-            "INSERT INTO agent_verdicts (transaction_id, agent, score, decision_hint) "
-            "VALUES (%s, %s, %s, %s) "
+            "INSERT INTO agent_verdicts (transaction_id, agent, score, decision_hint, "
+            "  rationale, confidence, degraded, model_version, evidence) "
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) "
             "ON CONFLICT (transaction_id, agent) DO UPDATE SET "
-            "  score = EXCLUDED.score, decision_hint = EXCLUDED.decision_hint",
+            "  score = EXCLUDED.score, decision_hint = EXCLUDED.decision_hint, "
+            "  rationale = EXCLUDED.rationale, confidence = EXCLUDED.confidence, "
+            "  degraded = EXCLUDED.degraded, model_version = EXCLUDED.model_version, "
+            "  evidence = EXCLUDED.evidence",
             (
                 envelope.transaction_id,
                 payload.agent.value,
                 payload.verdict.score,
                 payload.verdict.decision_hint.value,
+                payload.verdict.rationale,
+                payload.verdict.confidence,
+                payload.verdict.degraded,
+                payload.verdict.model_version,
+                json.dumps([e.model_dump(mode="json") for e in payload.verdict.evidence]),
             ),
         )
 

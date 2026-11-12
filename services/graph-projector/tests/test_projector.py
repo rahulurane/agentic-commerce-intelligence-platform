@@ -16,6 +16,7 @@ asserted:
 
 from __future__ import annotations
 
+import json
 import re
 from datetime import UTC, datetime
 from typing import Any
@@ -152,6 +153,11 @@ class _FakeCursor:
             self._store.setdefault("agent_verdicts", {})[(params[0], params[1])] = {
                 "score": params[2],
                 "decision_hint": params[3],
+                "rationale": params[4],
+                "confidence": params[5],
+                "degraded": params[6],
+                "model_version": params[7],
+                "evidence": params[8],
             }
         elif normalized.startswith("UPDATE transactions"):
             # UPDATE ... WHERE id = <last param>.
@@ -328,6 +334,32 @@ def test_postgres_idempotent_on_replay(monkeypatch: Any) -> None:
     # ON CONFLICT upserts collapse to a single row and a single journal entry.
     assert len(store["agent_verdicts"]) == 1
     assert len(store["event_journal"]) == 1
+
+
+def test_postgres_persists_verdict_rationale_and_evidence(monkeypatch: Any) -> None:
+    store: dict[str, dict[Any, dict[str, Any]]] = {}
+    sql_log: list[str] = []
+    _patch_psycopg(monkeypatch, _FakePsycopg(store, sql_log))
+    projector = PostgresProjector("postgresql://x")
+
+    envelope = _verdict()
+    payload = dict(envelope.payload)
+    payload["verdict"] = {
+        **payload["verdict"],
+        "evidence": [{"signal": "velocity", "value": 1.0, "weight": 0.5}],
+    }
+    envelope = envelope.model_copy(update={"payload": payload})
+
+    projector.project(envelope)
+    projector.project(envelope)  # replay stays idempotent
+
+    row = store["agent_verdicts"][("txn_1", "risk")]
+    assert len(store["agent_verdicts"]) == 1
+    assert row["rationale"] == "low risk"
+    assert row["confidence"] == 0.9
+    assert row["degraded"] is False
+    assert row["model_version"] == "risk-1"
+    assert json.loads(row["evidence"]) == [{"signal": "velocity", "value": 1.0, "weight": 0.5}]
 
 
 # --------------------------------------------------------------------------- #

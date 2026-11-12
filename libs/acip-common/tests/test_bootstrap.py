@@ -74,8 +74,10 @@ def test_issues_all_four_create_table_statements(monkeypatch: pytest.MonkeyPatch
     joined = " ".join(executed)
     for table in _EXPECTED_TABLES:
         assert f"CREATE TABLE IF NOT EXISTS {table}" in joined
-    # One statement issued per table.
-    assert len(executed) == len(_EXPECTED_TABLES)
+    # One CREATE per table plus five additive agent_verdicts ALTER ... ADD COLUMN statements.
+    for column in ("rationale", "confidence", "degraded", "model_version", "evidence"):
+        assert f"ALTER TABLE agent_verdicts ADD COLUMN IF NOT EXISTS {column} " in joined
+    assert len(executed) == len(_EXPECTED_TABLES) + 5
 
 
 def test_connection_failure_returns_false_without_raising(

@@ -234,6 +234,11 @@ def seed_postgres(settings: Settings) -> None:
                     decision_hint TEXT,
                     PRIMARY KEY (transaction_id, agent)
                 );
+                ALTER TABLE agent_verdicts ADD COLUMN IF NOT EXISTS rationale TEXT;
+                ALTER TABLE agent_verdicts ADD COLUMN IF NOT EXISTS confidence NUMERIC;
+                ALTER TABLE agent_verdicts ADD COLUMN IF NOT EXISTS degraded BOOLEAN;
+                ALTER TABLE agent_verdicts ADD COLUMN IF NOT EXISTS model_version TEXT;
+                ALTER TABLE agent_verdicts ADD COLUMN IF NOT EXISTS evidence JSONB;
                 CREATE TABLE IF NOT EXISTS event_journal (
                     event_id TEXT PRIMARY KEY,
                     transaction_id TEXT NOT NULL,

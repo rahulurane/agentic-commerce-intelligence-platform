@@ -13,6 +13,11 @@ The table shapes here are IDENTICAL to ``scripts/seed.py`` (docs/03 §4):
 * ``agent_verdicts(transaction_id, agent, score NUMERIC, decision_hint, PK(txn, agent))``
 * ``event_journal(event_id PK, transaction_id, event_type, occurred_at)``
 
+``agent_verdicts`` additionally carries nullable, additive explainability columns
+(``rationale TEXT, confidence NUMERIC, degraded BOOLEAN, model_version TEXT, evidence
+JSONB``) added via ``ALTER TABLE ... ADD COLUMN IF NOT EXISTS`` so pre-existing databases
+upgrade in place; rows written before the upgrade simply hold NULLs.
+
 Best-effort posture (consistent with the write path in docs/03 §8): a connection or
 operational failure is logged and swallowed (returns ``False``) rather than raising, so a
 database outage degrades the stack instead of crashing it. The ``psycopg`` import is lazy
@@ -55,6 +60,11 @@ _SCHEMA_STATEMENTS: tuple[str, ...] = (
         PRIMARY KEY (transaction_id, agent)
     )
     """,
+    "ALTER TABLE agent_verdicts ADD COLUMN IF NOT EXISTS rationale TEXT",
+    "ALTER TABLE agent_verdicts ADD COLUMN IF NOT EXISTS confidence NUMERIC",
+    "ALTER TABLE agent_verdicts ADD COLUMN IF NOT EXISTS degraded BOOLEAN",
+    "ALTER TABLE agent_verdicts ADD COLUMN IF NOT EXISTS model_version TEXT",
+    "ALTER TABLE agent_verdicts ADD COLUMN IF NOT EXISTS evidence JSONB",
     """
     CREATE TABLE IF NOT EXISTS event_journal (
         event_id TEXT PRIMARY KEY,
