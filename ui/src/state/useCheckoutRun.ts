@@ -66,6 +66,7 @@ export type RunAction =
   | { type: "select_done"; transaction: TransactionView }
   | { type: "select_not_found" }
   | { type: "select_failed"; message: string }
+  | { type: "refetch" }
   | { type: "explain"; explain: ExplainView | null }
   | { type: "replay"; index: number };
 
@@ -153,6 +154,8 @@ export function runReducer(state: RunState, action: RunAction): RunState {
       return { ...state, loadingHistory: false, notFound: true, phase: "idle" };
     case "select_failed":
       return { ...state, loadingHistory: false, phase: "error", error: action.message };
+    case "refetch":
+      return { ...state, phase: state.response ? "verdicts_pending" : state.phase };
     case "explain":
       return { ...state, explain: action.explain };
     case "replay":
@@ -215,6 +218,20 @@ export function useCheckoutRun() {
     }
   }, []);
 
+  /** Poll the stored verdicts again for the current run (the "Retry fetch" button). */
+  const refetchVerdicts = useCallback(async (transactionId: string) => {
+    const id = (runId.current += 1);
+    dispatch({ type: "refetch" });
+    try {
+      const transaction = await pollTransaction(transactionId);
+      if (id !== runId.current) return;
+      dispatch({ type: "polled", transaction });
+    } catch (err) {
+      if (id !== runId.current) return;
+      dispatch({ type: "failed", message: describeError(err) });
+    }
+  }, []);
+
   const loadExplain = useCallback(async (transactionId: string) => {
     try {
       dispatch({ type: "explain", explain: await getExplain(transactionId) });
@@ -229,5 +246,5 @@ export function useCheckoutRun() {
 
   const setReplayIndex = useCallback((index: number) => dispatch({ type: "replay", index }), []);
 
-  return { state, runCheckout, selectRecent, loadExplain, setReplayIndex };
+  return { state, runCheckout, selectRecent, refetchVerdicts, loadExplain, setReplayIndex };
 }

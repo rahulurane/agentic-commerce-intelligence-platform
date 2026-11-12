@@ -34,6 +34,11 @@ export interface WhyResult {
   factors: string[];
 }
 
+/** True when a hard veto ended the evaluation, so the composite score is only a sentinel. */
+export function isVetoKind(kind: WhyKind): boolean {
+  return kind === "policy_veto" || kind === "fraud_veto" || kind === "generic_veto";
+}
+
 function verdictFor(verdicts: AgentVerdict[], agent: string): AgentVerdict | undefined {
   return verdicts.find((v) => v.agent === agent);
 }
